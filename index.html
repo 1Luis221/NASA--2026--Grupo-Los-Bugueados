@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SPACE MIND AI | Acceso</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- CSS propio -->
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+    <!-- Fondo espacial -->
+    <img src="imagen/space-8759936_1280.jpg"
+         alt="Astronauta en el espacio"
+         class="fondo-espacial">
+
+    <div class="capa-oscura"></div>
+
+    <!-- Login -->
+    <main class="login-container">
+
+        <div class="login-header">
+
+            <div class="logo-icon">
+                <i data-lucide="orbit"></i>
+            </div>
+
+            <h1>SPACE MIND AI</h1>
+
+            <p>SISTEMA INTELIGENTE PARA ASTRONAUTAS</p>
+
+            <div class="linea"></div>
+
+            <span class="estado">
+                <span class="punto"></span>
+                SISTEMA DE AUTENTICACIÓN
+            </span>
+
+        </div>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+
+                <label for="usuario">USUARIO</label>
+
+                <div class="input-container">
+                    <i data-lucide="user"></i>
+
+                    <input
+                        type="text"
+                        id="usuario"
+                        placeholder="Ingrese su usuario"
+                        autocomplete="username"
+                        required>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="password">CONTRASEÑA</label>
+
+                <div class="input-container">
+                    <i data-lucide="lock"></i>
+
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Ingrese su contraseña"
+                        autocomplete="current-password"
+                        required>
+
+                    <button type="button" id="mostrarPassword"
+                            class="btn-ojo" aria-label="Mostrar contraseña">
+                        <i data-lucide="eye"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="mensaje" class="mensaje" aria-live="polite"></div>
+
+            <button type="submit" class="btn-login">
+                <span>INGRESAR AL SISTEMA</span>
+                <i data-lucide="arrow-right"></i>
+            </button>
+
+        </form>
+
+        <div class="login-footer">
+            <p>ACCESO RESTRINGIDO · PERSONAL AUTORIZADO</p>
+            <span>SPACE MIND AI © 2026</span>
+        </div>
+
+    </main>
+
+    <!-- Íconos Lucide (debe cargar antes de main.js) -->
+    <script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+
+    <!-- JS propio -->
+    <script src="main.js"></script>
+
+</body>
+</html>
