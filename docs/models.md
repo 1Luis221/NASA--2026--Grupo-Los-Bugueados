@@ -287,7 +287,7 @@ Ejemplo — lectura en espera tras una pérdida de señal (*LOS*):
 - **`id` es la clave de idempotencia.** Se genera una sola vez al encolar el evento (`crypto.randomUUID()`) y **no cambia entre reintentos**: un reintento reenvía el mismo `id`.
 - El receptor registra los `id` ya procesados. Si recibe uno repetido (p. ej. porque el acuse anterior se perdió en un corte de enlace), no lo reaplica y responde `duplicate`.
 - `(origin, sequence)` también identifica el evento de forma única. `sequence` es monótono por nodo de origen: permite ordenar y detectar huecos.
-- El esquema garantiza la presencia y el formato de estas claves; la unicidad entre eventos se comprobará en el receptor (Fase 2).
+- El esquema garantiza la presencia y el formato de estas claves; la unicidad entre eventos la comprueba el receptor (ground-api, ver [communications.md](communications.md)).
 
 ### SyncAck
 
@@ -319,7 +319,7 @@ El transporte, la política de reintentos (backoff) y el registro de ids procesa
 
 ## Eventos Socket.IO
 
-Convención `dominio:acción`. Solo están definidos los nombres; los emisores y receptores llegarán en la Fase 2.
+Convención `dominio:acción`. ground-api emite los eventos de entidades y alertas hacia el dashboard (ver [communications.md](communications.md)); los de sincronización y enlace están reservados porque la sincronización nave–Tierra va por HTTP.
 
 | Constante | Evento | Payload previsto |
 |---|---|---|
@@ -330,8 +330,8 @@ Convención `dominio:acción`. Solo están definidos los nombres; los emisores y
 | `ALERT_CREATED` / `ALERT_UPDATED` | `alert:created` / `alert:updated` | `Alert` |
 | `SYNC_EVENT` | `sync:event` | `SyncEvent` |
 | `SYNC_ACK` | `sync:ack` | `SyncAck` |
-| `SYNC_STATUS` | `sync:status` | por definir (Fase 2) |
-| `LINK_STATUS` | `link:status` | por definir (Fase 2) |
+| `SYNC_STATUS` | `sync:status` | reservado (sin emisor) |
+| `LINK_STATUS` | `link:status` | reservado (sin emisor) |
 
 ## Pruebas
 

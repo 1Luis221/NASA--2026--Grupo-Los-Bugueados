@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
-/** GET /health: estado básico del servicio (liveness). */
-export function createHealthRouter({ serviceName }) {
+/** GET /health: estado básico del servicio (liveness) y detalles opcionales. */
+export function createHealthRouter({ serviceName, getDetails = () => ({}) }) {
   const router = Router()
 
   router.get('/', (_req, res) => {
@@ -10,6 +10,7 @@ export function createHealthRouter({ serviceName }) {
       service: serviceName,
       uptime: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
+      ...getDetails(),
     })
   })
 

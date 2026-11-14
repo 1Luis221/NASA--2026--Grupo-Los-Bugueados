@@ -1,7 +1,8 @@
 /**
  * Nombres de eventos Socket.IO compartidos por clientes y servidores.
- * Convención "dominio:acción". Aún no hay emisores ni receptores: se
- * implementarán en fases posteriores usando estas constantes.
+ * Convención "dominio:acción". ground-api emite los eventos de entidades y
+ * alertas hacia el dashboard; los de sincronización y enlace siguen reservados
+ * (la sincronización nave–Tierra va por HTTP). Ver docs/communications.md.
  */
 export const SOCKET_EVENTS = Object.freeze({
   // Telemetría y autoevaluaciones (payload: entidad validada por su esquema)

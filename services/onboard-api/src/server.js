@@ -1,19 +1,29 @@
 import { createApp } from './app.js'
-import { config } from './config.js'
+import { createOnboardContext } from './context.js'
+
+const ctx = createOnboardContext()
+const { config, logger } = ctx
 
 // En Express 5, el callback de listen() recibe el error si el arranque falla.
-const server = createApp().listen(config.port, (err) => {
+const server = createApp(ctx).listen(config.port, (err) => {
   if (err) {
     const reason = err.code === 'EADDRINUSE' ? `el puerto ${config.port} ya está en uso` : err.message
-    console.error(`[${config.serviceName}] no se pudo iniciar: ${reason}`)
+    logger.error(`no se pudo iniciar: ${reason}`)
     process.exit(1)
   }
-  console.log(`[${config.serviceName}] escuchando en http://localhost:${config.port} (${config.env})`)
+  ctx.start()
+  logger.info(`escuchando en http://localhost:${config.port} (${config.env}) → tierra: ${config.groundApiUrl}`)
+  if (config.devControls) logger.info('controles del simulador habilitados en /api/dev')
 })
 
-function shutdown(signal) {
-  console.log(`[${config.serviceName}] ${signal} recibido, cerrando…`)
+let shuttingDown = false
+async function shutdown(signal) {
+  if (shuttingDown) return
+  shuttingDown = true
+  logger.info(`${signal} recibido, cerrando…`)
+  await ctx.stop()
   server.close(() => process.exit(0))
+  server.closeAllConnections()
 }
 
 process.on('SIGINT', () => shutdown('SIGINT'))

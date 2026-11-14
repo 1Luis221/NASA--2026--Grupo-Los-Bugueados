@@ -6,7 +6,11 @@ import { API_PREFIX, PORTS } from '@astronaut-wellness/shared/constants'
 
 // La API de destino puede sobrescribirse con GROUND_API_URL (p. ej. en otra máquina).
 const apiTarget = process.env.GROUND_API_URL ?? `http://localhost:${PORTS.GROUND_API}`
-const proxy = { [API_PREFIX]: { target: apiTarget, changeOrigin: true } }
+const proxy = {
+  [API_PREFIX]: { target: apiTarget, changeOrigin: true },
+  // Actualizaciones en tiempo real (Socket.IO, WebSocket) desde ground-api.
+  '/socket.io': { target: apiTarget, changeOrigin: true, ws: true },
+}
 
 // https://vite.dev/config/
 export default defineConfig({
