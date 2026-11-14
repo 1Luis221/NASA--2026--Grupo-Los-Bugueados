@@ -1,0 +1,34 @@
+{
+  "name": "astronaut-wellness-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monitoreo del bienestar de astronautas durante misiones espaciales (NASA Space Apps Challenge).",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n ground-api,onboard-api,ground-ui,onboard-ui -c cyan,magenta,blue,green \"npm:dev:ground-api\" \"npm:dev:onboard-api\" \"npm:dev:ground-ui\" \"npm:dev:onboard-ui\"",
+    "dev:apis": "concurrently -k -n ground-api,onboard-api -c cyan,magenta \"npm:dev:ground-api\" \"npm:dev:onboard-api\"",
+    "dev:ground-api": "npm run dev -w @astronaut-wellness/ground-api",
+    "dev:onboard-api": "npm run dev -w @astronaut-wellness/onboard-api",
+    "dev:ground-ui": "npm run dev -w @astronaut-wellness/ground-control",
+    "dev:onboard-ui": "npm run dev -w @astronaut-wellness/onboard",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.7",
+    "eslint": "^10.15.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.14.0"
+  }
+}

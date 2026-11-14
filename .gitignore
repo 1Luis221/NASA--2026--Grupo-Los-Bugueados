@@ -1,0 +1,37 @@
+# Dependencias
+node_modules/
+
+# Builds y cachés
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+.eslintcache
+
+# Variables de entorno (solo se versionan los ejemplos)
+.env
+.env.*
+!.env.example
+*.local
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor / SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
