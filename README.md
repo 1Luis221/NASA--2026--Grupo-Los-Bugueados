@@ -38,6 +38,7 @@ Los puertos están definidos en un único lugar: [`packages/shared/src/constants
 | `npm run dev:ground-ui` / `dev:onboard-ui` | Un frontend concreto |
 | `npm run build` | Build de producción de todos los workspaces que lo definan |
 | `npm run lint` / `lint:fix` | ESLint sobre todo el monorepo |
+| `npm test` | Pruebas unitarias (Vitest) de todos los workspaces |
 
 ## Estructura
 
@@ -55,6 +56,6 @@ docs/               Documentación del proyecto
 
 ## Stack
 
-JavaScript + JSX (sin TypeScript) · React 19 · Vite 8 · Tailwind CSS v4 · Express 5 · npm workspaces · ESLint 10.
+JavaScript + JSX (sin TypeScript) · React 19 · Vite 8 · Tailwind CSS v4 · Express 5 · Zod 4 · Vitest · npm workspaces · ESLint 10.
 
 Más detalles en [`docs/`](docs/README.md).

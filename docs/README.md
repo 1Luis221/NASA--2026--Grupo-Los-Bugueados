@@ -18,6 +18,7 @@
 
 - Cada frontend habla **solo con su API** a través del proxy `/api` de Vite (sin CORS en desarrollo). La URL de destino se puede sobrescribir con `GROUND_API_URL` / `ONBOARD_API_URL`.
 - `packages/shared` es ESM puro e isomórfico (navegador y Node): no debe importar módulos exclusivos de Node ni de React.
+- Los modelos de datos, sus reglas de validación y los eventos Socket.IO están documentados en [models.md](models.md).
 
 ## Convenciones de las APIs
 
@@ -52,7 +53,7 @@ src/
 ## Hoja de ruta
 
 - **Fase 0** — Saneamiento del monorepo ✅
-- **Fase 1** — Esquemas y utilidades en `packages/shared` (zod, umbrales, eventos) + tests
+- **Fase 1** — Modelos y contratos compartidos en `packages/shared` (Zod, eventos) + tests ✅
 - **Fase 2** — APIs: telemetría simulada, check-ins, enlace con latencia simulada, Socket.IO
 - **Fase 3** — UI base: shadcn/ui, layout, rutas
 - **Fase 4** — MVP funcional de ambas interfaces
