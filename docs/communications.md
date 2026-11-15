@@ -68,6 +68,14 @@ Prefijo de negocio `/api` (`API_PREFIX`). Listados: `{ data, count }`, más reci
 | GET | `/api/vitals?crewMemberId&limit` | Constantes simuladas |
 | GET | `/api/check-ins?crewMemberId&limit` | Autoevaluaciones |
 | POST | `/api/check-ins` | Registrar autoevaluación (validación estricta; `id`, `recordedAt` y `source` los pone el servidor) |
+| GET | `/api/camera-metrics?crewMemberId&limit` | Métricas de cámara agregadas |
+| GET | `/api/alerts?status&severity&category&crewMemberId&limit` | Alertas generadas a bordo: enlace y reglas demostrativas ([alerts.md](alerts.md)) |
+| POST | `/api/dev/alerts/check-staleness` | *(solo desarrollo)* Ejecuta la comprobación de datos desactualizados |
+| GET | `/api/dev/alerts/rules` | *(solo desarrollo)* Configuración efectiva de las reglas de alerta |
+| POST | `/api/camera-metrics` | Registrar las métricas **agregadas** de una ventana (nunca imágenes). Validación estricta; **400** si llegan `id`, `recordedAt` o `source`, **404** tripulante inexistente, **409** inactivo. Se encola para Tierra |
+| GET | `/api/vigilance-tests?crewMemberId&limit` | Pruebas de vigilancia (PVT) |
+| — | Cabecera `X-Data-Fixture: 1` en los dos POST anteriores | *(solo desarrollo)* Marca el registro como dato de prueba: se guarda con `source.simulated: true` y `deviceId: "e2e-fixture"` para que nunca se presente como medición real. La usa el E2E; en producción se ignora. Solo puede **rebajar** la procedencia (a simulada): un cliente nunca puede atribuirse un dato real ni enviar su propio `source` (400). La validación estricta de ensayos y resumen se aplica igual. La interfaz Onboard la envía cuando una PVT se respondió con eventos generados por un script (ver [frontend.md](frontend.md)) |
+| POST | `/api/vigilance-tests` | Registrar una PVT con todos sus ensayos; el esquema recalcula clasificación y resumen (**400** con `issues` si no coinciden). Mismas reglas que el anterior. Se encola para Tierra |
 | GET | `/api/alerts?status&severity&limit` | Alertas generadas a bordo |
 | GET | `/api/sync/events?status&limit` | Cola de sincronización (orden de `sequence`) |
 | GET | `/api/sync/status` | Estado del enlace, contadores de la cola, despachador |
@@ -91,7 +99,7 @@ Prefijo de negocio `/api` (`API_PREFIX`). Listados: `{ data, count }`, más reci
 | GET | `/api/sync/events?limit` | Eventos aplicados |
 | GET | `/api/sync/stats` | Contadores, última secuencia por origen, rechazos recientes |
 | GET | `/api/crew`, `/api/crew/:id` | Tripulación recibida |
-| GET | `/api/vitals`, `/api/check-ins`, `/api/camera-metrics` | `?crewMemberId&limit` |
+| GET | `/api/vitals`, `/api/check-ins`, `/api/camera-metrics`, `/api/vigilance-tests` | `?crewMemberId&limit` |
 | GET | `/api/alerts?status&severity&limit` | Alertas recibidas |
 
 ## Eventos Socket.IO (ground-api → dashboard)
@@ -104,6 +112,7 @@ Emitidos a todos los clientes conectados cuando tierra **acepta y aplica** un re
 | `vital_signs` | `vitals:recorded` |
 | `wellness_check_in` | `check-in:submitted` |
 | `camera_metrics` | `camera:metrics-recorded` |
+| `vigilance_test` | `vigilance:test-recorded` |
 | `alert` (create / update) | `alert:created` / `alert:updated` |
 
 `sync:event`, `sync:ack`, `sync:status` y `link:status` siguen reservados: la sincronización no usa Socket.IO. El dashboard se conecta a través del proxy de Vite (`/socket.io`, con WebSocket) o directamente si su origen está en `SOCKET_CORS_ORIGINS`.

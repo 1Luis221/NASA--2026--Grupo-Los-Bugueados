@@ -3,6 +3,7 @@ import {
   CameraMetricsSchema,
   CrewMemberSchema,
   SOCKET_EVENTS,
+  VigilanceTestSchema,
   VitalSignsSchema,
   WellnessCheckInSchema,
 } from '@astronaut-wellness/shared'
@@ -37,6 +38,12 @@ export const COLLECTIONS = Object.freeze({
     schema: CameraMetricsSchema,
     fetch: (api, query) => api.listCameraMetrics(query),
     store: { limit: 200, groupBy: 'crewMemberId' },
+  },
+  vigilance_test: {
+    events: [SOCKET_EVENTS.VIGILANCE_TEST_RECORDED],
+    schema: VigilanceTestSchema,
+    fetch: (api, query) => api.listVigilanceTests(query),
+    store: { limit: 100, groupBy: 'crewMemberId' },
   },
   alert: {
     events: [SOCKET_EVENTS.ALERT_CREATED, SOCKET_EVENTS.ALERT_UPDATED],

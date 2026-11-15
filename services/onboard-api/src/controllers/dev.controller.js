@@ -2,7 +2,7 @@
  * Controles del simulador para desarrollo y pruebas. Solo se montan cuando
  * `config.devControls` es true (nunca con NODE_ENV=production).
  */
-export function createDevController({ link, worker, telemetryService }) {
+export function createDevController({ link, worker, telemetryService, checkStaleness, services }) {
   return {
     getLink: (_req, res) => res.json({ data: link.getStatus() }),
 
@@ -21,5 +21,14 @@ export function createDevController({ link, worker, telemetryService }) {
     },
 
     flushSync: async (_req, res) => res.json({ data: await worker.flush() }),
+
+    /** Ejecuta ya la comprobación periódica de datos desactualizados. */
+    checkStaleness: (_req, res) => {
+      const data = checkStaleness()
+      res.json({ data, count: data.length })
+    },
+
+    /** Configuración efectiva de las reglas de alerta de demostración. */
+    alertRules: (_req, res) => res.json({ data: services.alertService.rules }),
   }
 }

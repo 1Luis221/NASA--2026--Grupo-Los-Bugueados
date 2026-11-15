@@ -33,3 +33,12 @@ describe('WellnessCheckInSchema', () => {
     expectInvalid(WellnessCheckInSchema, variant(exampleWellnessCheckIn, (c) => { c.notes = 'x'.repeat(501) }), ['notes'])
   })
 })
+
+describe('WellnessCheckInSchema · somnolencia (KSS)', () => {
+  it('acepta somnolencia KSS entera 1–9 (opcional) y rechaza valores fuera de escala', () => {
+    expectValid(WellnessCheckInSchema, variant(exampleWellnessCheckIn, (c) => { c.sleepiness = 1 }))
+    expectValid(WellnessCheckInSchema, variant(exampleWellnessCheckIn, (c) => { c.sleepiness = 9 }))
+    expectInvalid(WellnessCheckInSchema, variant(exampleWellnessCheckIn, (c) => { c.sleepiness = 10 }), ['sleepiness'])
+    expectInvalid(WellnessCheckInSchema, variant(exampleWellnessCheckIn, (c) => { c.sleepiness = 6.5 }), ['sleepiness'])
+  })
+})

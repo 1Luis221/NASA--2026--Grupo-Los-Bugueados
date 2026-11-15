@@ -54,3 +54,13 @@ describe('VitalSignsSchema', () => {
     }))
   })
 })
+
+describe('VitalSignsSchema · actividad y HRV', () => {
+  it('actividad en MET (0–25) como única medición válida; unidad obligatoria', () => {
+    expectValid(VitalSignsSchema, { ...structuredClone(exampleVitalSigns), activityLevel: { value: 2.5, unit: 'MET' } })
+    expectInvalid(VitalSignsSchema, variant(exampleVitalSigns, (v) => { v.activityLevel = { value: 2.5, unit: 'kcal' } }), ['activityLevel', 'unit'])
+    expectInvalid(VitalSignsSchema, variant(exampleVitalSigns, (v) => { v.activityLevel = { value: 40, unit: 'MET' } }), ['activityLevel', 'value'])
+    const { id, crewMemberId, recordedAt, source } = exampleVitalSigns
+    expectValid(VitalSignsSchema, { id, crewMemberId, recordedAt, source, activityLevel: { value: 1, unit: 'MET' } })
+  })
+})

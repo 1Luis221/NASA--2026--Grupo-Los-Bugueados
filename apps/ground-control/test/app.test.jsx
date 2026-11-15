@@ -28,11 +28,12 @@ describe('Ground Control · estructura', () => {
     for (const [label, findContent] of screens) {
       await user.click(within(nav).getByRole('link', { name: label }))
       // React Router navega en una transición: la vista anterior se mantiene hasta que carga la nueva.
-      expect(await screen.findByRole('heading', { level: 1, name: label })).toBeInTheDocument()
+      // Margen amplio: cada vista se carga bajo demanda y con el equipo cargado puede tardar más de 1 s.
+      expect(await screen.findByRole('heading', { level: 1, name: label }, { timeout: 5000 })).toBeInTheDocument()
       expect(within(nav).getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page')
       expect(await findContent()).toBeInTheDocument()
     }
-  })
+  }, 15_000) // visita varias vistas cargadas bajo demanda: con el equipo cargado puede superar 5 s
 
   it('muestra un estado de página no encontrada', () => {
     renderApp({ path: '/no-existe' })

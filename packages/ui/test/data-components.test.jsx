@@ -1,12 +1,14 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { exampleAlert, exampleVitalSigns, exampleWellnessCheckIn } from '@astronaut-wellness/shared/examples'
+import { exampleAlert, exampleCameraMetrics, exampleVigilanceTest, exampleVitalSigns, exampleWellnessCheckIn } from '@astronaut-wellness/shared/examples'
 import {
   AlertList,
+  CameraMetricsTable,
   CheckInTable,
   CrewCard,
   SourceBadge,
+  VigilanceTestTable,
   VitalSignsChart,
   VitalSignsSummary,
   WellnessSummary,
@@ -171,5 +173,34 @@ describe('latestByCrew', () => {
     const latest = latestByCrew([a1, b1, a2])
     expect(latest.get('a')).toBe(a2)
     expect(latest.get('b')).toBe(b1)
+  })
+})
+
+describe('CameraMetricsTable y VigilanceTestTable', () => {
+  it('CameraMetricsTable muestra métricas agregadas, modelo y procedencia (sin imágenes)', () => {
+    render(<CameraMetricsTable metrics={[structuredClone(exampleCameraMetrics)]} />)
+    const table = screen.getByRole('table', { name: /Métricas agregadas de cámara \(sin imágenes\)/ })
+    expect(within(table).getAllByRole('row')).toHaveLength(2)
+    expect(within(table).getByText('Detectado')).toBeInTheDocument()
+    expect(table.querySelector('img, video, canvas')).toBeNull()
+  })
+
+  it('CameraMetricsTable vacía muestra un estado vacío', () => {
+    render(<CameraMetricsTable metrics={[]} />)
+    expect(screen.getByText('Sin métricas de cámara')).toBeInTheDocument()
+  })
+
+  it('VigilanceTestTable resume la prueba con el protocolo y su umbral de lapso', () => {
+    render(<VigilanceTestTable tests={[structuredClone(exampleVigilanceTest)]} />)
+    const table = screen.getByRole('table', { name: /vigilancia psicomotora/ })
+    const cells = within(table).getAllByRole('cell').map((c) => c.textContent)
+    expect(cells).toEqual(expect.arrayContaining(['6', '346 ms', '280 ms', '1', '2']))
+    expect(within(table).getByText('lapso ≥ 355 ms')).toBeInTheDocument()
+    expect(within(table).getByText('Dato real')).toBeInTheDocument()
+  })
+
+  it('VigilanceTestTable vacía muestra un estado vacío', () => {
+    render(<VigilanceTestTable tests={[]} />)
+    expect(screen.getByText('Sin pruebas de vigilancia')).toBeInTheDocument()
   })
 })

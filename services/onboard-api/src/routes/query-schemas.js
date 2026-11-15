@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+  ALERT_CATEGORIES,
   ALERT_SEVERITIES,
   ALERT_STATUSES,
   LINK_STATES,
@@ -15,6 +16,8 @@ export const RecordsQuerySchema = z.object({ crewMemberId: idSchema.optional(), 
 export const AlertsQuerySchema = z.object({
   status: z.enum(ALERT_STATUSES).optional(),
   severity: z.enum(ALERT_SEVERITIES).optional(),
+  category: z.enum(ALERT_CATEGORIES).optional(),
+  crewMemberId: idSchema.optional(),
   limit,
 })
 

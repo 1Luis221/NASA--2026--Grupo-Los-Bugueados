@@ -19,6 +19,7 @@ export function errorHandler(err, _req, res, _next) {
   if (status >= 500) console.error(err)
   res.status(status).json({
     error: status >= 500 ? 'Internal Server Error' : err.message,
+    ...(err.issues && { issues: err.issues }),
     ...(err.details && { details: err.details }),
     ...(process.env.NODE_ENV === 'development' && status >= 500 && { stack: err.stack }),
   })

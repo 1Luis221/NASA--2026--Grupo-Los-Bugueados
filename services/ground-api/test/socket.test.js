@@ -51,6 +51,14 @@ describe('Socket.IO en ground-api', () => {
     expect(await received).toEqual(event.payload)
   })
 
+  it('emite vigilance:test-recorded al aceptar una prueba de vigilancia', async () => {
+    const client = await connect()
+    const received = nextMessage(client, SOCKET_EVENTS.VIGILANCE_TEST_RECORDED)
+    const event = makeEvent({ entityType: 'vigilance_test' })
+    expect((await post(event)).status).toBe(201)
+    expect(await received).toEqual(event.payload)
+  })
+
   it('emite a todos los clientes conectados', async () => {
     const [a, b] = await Promise.all([connect(), connect()])
     const messages = Promise.all([nextMessage(a, SOCKET_EVENTS.CREW_UPDATED), nextMessage(b, SOCKET_EVENTS.CREW_UPDATED)])
@@ -121,10 +129,50 @@ describe('Socket.IO en ground-api', () => {
 
   it('usa exclusivamente nombres definidos en SOCKET_EVENTS', () => {
     const allowed = new Set(Object.values(SOCKET_EVENTS))
-    for (const entityType of ['crew_member', 'vital_signs', 'wellness_check_in', 'camera_metrics', 'alert']) {
+    for (const entityType of ['crew_member', 'vital_signs', 'wellness_check_in', 'camera_metrics', 'alert', 'vigilance_test']) {
       for (const operation of ['create', 'update']) {
         expect(allowed.has(socketEventFor({ entityType, operation }))).toBe(true)
       }
     }
+  })
+})
+
+describe('Socket.IO · alertas demostrativas (Bloque 2)', () => {
+  it('create → alert:created; update de la MISMA alerta → alert:updated; reenvío duplicado → nada', async () => {
+    const client = await connect()
+    const seen = []
+    client.on(SOCKET_EVENTS.ALERT_CREATED, (a) => seen.push(['created', a.id, a.status, a.evidence?.length]))
+    client.on(SOCKET_EVENTS.ALERT_UPDATED, (a) => seen.push(['updated', a.id, a.status, a.evidence?.length]))
+
+    const id = crypto.randomUUID()
+    const evidence = (eid) => ({ entityType: 'vigilance_test', id: eid, recordedAt: '2026-11-14T07:00:00.000Z', source: { type: 'cognitive_test', simulated: false }, summary: 'PVT' })
+    const base = { id, category: 'cognitive', status: 'active', rule: { id: 'demo.pvt.lapses', name: 'Lapsos', demonstrative: true }, dedupKey: 'demo.pvt.lapses:x' }
+    const created = makeEvent({ entityType: 'alert', payload: { ...base, evidence: [evidence(crypto.randomUUID())], updatedAt: '2026-11-14T07:31:00.000Z' } })
+    const updated = makeEvent({ entityType: 'alert', operation: 'update', payload: { ...base, evidence: [evidence(crypto.randomUUID()), ...created.payload.evidence], updatedAt: '2026-11-14T08:00:00.000Z' } })
+    const resolved = makeEvent({
+      entityType: 'alert',
+      operation: 'update',
+      payload: { ...updated.payload, status: 'resolved', resolvedAt: '2026-11-14T09:00:00.000Z', updatedAt: '2026-11-14T09:00:00.000Z' },
+    })
+    for (const e of [created, updated, resolved]) {
+      delete e.payload.acknowledgedAt // el ejemplo base es una alerta reconocida
+      delete e.payload.acknowledgedBy
+    }
+
+    expect((await post(created)).status).toBe(201)
+    expect((await post(created)).status).toBe(200) // reenvío tras perder el acuse
+    expect((await post(updated)).status).toBe(201)
+    expect((await post(resolved)).status).toBe(201)
+    expect((await post(updated)).status).toBe(200) // reenvío tardío de una versión antigua: duplicado, no reaplica
+    await new Promise((r) => setTimeout(r, 100))
+
+    expect(seen).toEqual([
+      ['created', id, 'active', 1],
+      ['updated', id, 'active', 2],
+      ['updated', id, 'resolved', 2],
+    ])
+    const stored = (await (await fetch(`${baseUrl}/api/alerts?limit=50`)).json()).data.filter((a) => a.id === id)
+    expect(stored).toHaveLength(1)
+    expect(stored[0].status).toBe('resolved')
   })
 })

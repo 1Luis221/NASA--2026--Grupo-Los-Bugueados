@@ -83,3 +83,23 @@ describe('transiciones de estado de alertas', () => {
     expect(Object.keys(ALERT_STATUS_TRANSITIONS).sort()).toEqual([...ALERT_STATUSES].sort())
   })
 })
+
+describe('AlertSchema · regla, evidencia y deduplicación', () => {
+  const withRule = (a) => {
+    a.category = 'cognitive'
+    a.rule = { id: 'demo.pvt.lapses', name: 'Lapsos (regla demostrativa)', demonstrative: true, parameters: { minLapses: 5, scale: 'PVT-B' } }
+    a.evidence = [{ entityType: 'vigilance_test', id: crypto.randomUUID(), recordedAt: '2026-11-14T07:00:00.000Z', source: { type: 'cognitive_test', simulated: false }, summary: 'PVT-B: 6 lapsos' }]
+    a.dedupKey = 'demo.pvt.lapses:abc'
+  }
+
+  it('acepta regla demostrativa, evidencia con procedencia y clave de deduplicación', () => {
+    expectValid(AlertSchema, variant(exampleAlert, withRule))
+    expectValid(AlertSchema, variant(exampleAlert, (a) => { a.category = 'data_quality' }))
+  })
+
+  it('rechaza identificadores de regla inválidos, evidencia sin procedencia y más de 20 evidencias', () => {
+    expectInvalid(AlertSchema, variant(exampleAlert, (a) => { withRule(a); a.rule.id = 'Regla Con Espacios' }), ['rule', 'id'])
+    expectInvalid(AlertSchema, variant(exampleAlert, (a) => { withRule(a); delete a.evidence[0].source }), ['evidence', 0, 'source'])
+    expectInvalid(AlertSchema, variant(exampleAlert, (a) => { withRule(a); a.evidence = Array(21).fill(a.evidence[0]) }), ['evidence'])
+  })
+})

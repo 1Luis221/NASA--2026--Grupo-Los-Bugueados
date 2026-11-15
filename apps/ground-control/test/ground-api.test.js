@@ -14,6 +14,7 @@ describe('Ground API · endpoints consumidos', () => {
     ['listVitals', [{ crewMemberId: 'abc', limit: 20 }], '/api/vitals?crewMemberId=abc&limit=20'],
     ['listCheckIns', [{ crewMemberId: 'abc' }], '/api/check-ins?crewMemberId=abc'],
     ['listCameraMetrics', [{}], '/api/camera-metrics'],
+    ['listVigilanceTests', [{ crewMemberId: 'abc', limit: 50 }], '/api/vigilance-tests?crewMemberId=abc&limit=50'],
     ['listAlerts', [{ status: 'active', severity: 'critical' }], '/api/alerts?status=active&severity=critical'],
     ['listSyncEvents', [{ limit: 5 }], '/api/sync/events?limit=5'],
     ['getSyncStats', [], '/api/sync/stats'],

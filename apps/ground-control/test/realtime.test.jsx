@@ -15,6 +15,7 @@ function setup({ api = {}, strict = false, limits } = {}) {
     listVitals: vi.fn(async () => list([])),
     listCheckIns: vi.fn(async () => list([])),
     listCameraMetrics: vi.fn(async () => list([])),
+    listVigilanceTests: vi.fn(async () => list([])),
     listAlerts: vi.fn(async () => list([])),
     getSyncStats: vi.fn(async () => ({ data: { processedEvents: 0 } })),
     listSyncEvents: vi.fn(async () => list([])),

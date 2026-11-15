@@ -65,6 +65,8 @@ export function createFakeGround(clock) {
     sendEvent,
     received,
     stored,
+    /** La siguiente llamada se procesa con normalidad (para colocar fallos en llamadas posteriores). */
+    passNext: () => plan.push({ type: 'pass' }),
     failNext: (error) => plan.push({ type: 'fail', error }),
     loseNextAck: (error) => plan.push({ type: 'lose-ack', error }),
     rejectNext: () => plan.push({ type: 'reject' }),

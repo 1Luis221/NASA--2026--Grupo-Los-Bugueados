@@ -18,19 +18,19 @@ describe('Onboard · estructura', () => {
     expect(await screen.findByRole('region', { name: 'Tripulante seleccionado' })).toBeInTheDocument()
   })
 
-  it('navega entre las seis vistas con el menú', async () => {
+  it('navega entre las siete vistas con el menú', async () => {
     const { user } = renderApp()
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
-    for (const label of ['Signos vitales', 'Autoevaluación', 'Sincronización', 'Cámara', 'Simulación', 'Inicio']) {
+    for (const label of ['Signos vitales', 'Autoevaluación', 'Sincronización', 'Cámara', 'Vigilancia', 'Simulación', 'Inicio']) {
       await user.click(within(nav).getByRole('link', { name: label }))
-      expect(await screen.findByRole('heading', { level: 1, name: label })).toBeInTheDocument()
+      expect(await screen.findByRole('heading', { level: 1, name: label }, { timeout: 5000 })).toBeInTheDocument()
       expect(within(nav).getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page')
     }
-  })
+  }, 15_000) // visita varias vistas cargadas bajo demanda: con el equipo cargado puede superar 5 s
 
   it('en desarrollo el menú incluye Simulación', () => {
     renderApp({ devTools: true })
-    expect(navLabels()).toEqual(['Inicio', 'Signos vitales', 'Autoevaluación', 'Sincronización', 'Cámara', 'Simulación'])
+    expect(navLabels()).toEqual(['Inicio', 'Signos vitales', 'Autoevaluación', 'Sincronización', 'Cámara', 'Vigilancia', 'Simulación'])
   })
 
   it('en producción no existe Simulación ni en el menú ni como ruta, y no se llama a /api/dev', async () => {

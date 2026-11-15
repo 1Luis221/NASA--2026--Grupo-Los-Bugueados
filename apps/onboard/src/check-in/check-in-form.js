@@ -10,7 +10,7 @@ export const CheckInInputSchema = WellnessCheckInStrictSchema.omit({ id: true, r
 
 export const SCALE_KEYS = CHECK_IN_SCALES.map((scale) => scale.key)
 
-export const emptyForm = () => ({ mood: null, stress: null, fatigue: null, sleepQuality: null, sleepHours: '', notes: '' })
+export const emptyForm = () => ({ mood: null, stress: null, fatigue: null, sleepQuality: null, sleepHours: '', sleepiness: '', notes: '' })
 
 /** Formulario → cuerpo HTTP. Los campos opcionales vacíos no se envían. */
 export function toCheckInBody(form, crewMemberId) {
@@ -22,6 +22,7 @@ export function toCheckInBody(form, crewMemberId) {
     fatigue: form.fatigue,
     sleepQuality: form.sleepQuality,
     ...(form.sleepHours !== '' && { sleepDuration: { value: Number(form.sleepHours), unit: 'h' } }),
+    ...(form.sleepiness !== '' && form.sleepiness !== undefined && { sleepiness: Number(form.sleepiness) }),
     ...(notes && { notes }),
   }
 }
@@ -30,6 +31,7 @@ export function toCheckInBody(form, crewMemberId) {
 const FIELD_MESSAGES = {
   crewMemberId: 'Selecciona un tripulante válido.',
   sleepDuration: 'Indica las horas de sueño como un número entre 0 y 24.',
+  sleepiness: 'Elige un nivel de somnolencia de 1 a 9 o déjalo sin indicar.',
   notes: 'Las notas admiten como máximo 500 caracteres.',
   _unknown: 'Hay un campo que no admite la API.',
 }

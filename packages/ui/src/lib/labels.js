@@ -27,7 +27,22 @@ export const ALERT_CATEGORY_LABELS = Object.freeze({
   camera: 'Cámara',
   communication: 'Comunicaciones',
   system: 'Sistema',
+  cognitive: 'Rendimiento cognitivo',
+  data_quality: 'Calidad de datos',
 })
+
+/** Karolinska Sleepiness Scale (KSS): somnolencia autodeclarada en este momento. */
+export const KSS_SCALE = Object.freeze([
+  { value: 1, label: 'Extremadamente despierto' },
+  { value: 2, label: 'Muy despierto' },
+  { value: 3, label: 'Despierto' },
+  { value: 4, label: 'Bastante despierto' },
+  { value: 5, label: 'Ni despierto ni somnoliento' },
+  { value: 6, label: 'Algunos signos de somnolencia' },
+  { value: 7, label: 'Somnoliento, sin esfuerzo por mantenerse despierto' },
+  { value: 8, label: 'Somnoliento, con algo de esfuerzo por mantenerse despierto' },
+  { value: 9, label: 'Muy somnoliento, gran esfuerzo, luchando contra el sueño' },
+])
 
 export const ENTITY_TYPE_LABELS = Object.freeze({
   crew_member: 'Tripulante',
@@ -35,6 +50,7 @@ export const ENTITY_TYPE_LABELS = Object.freeze({
   wellness_check_in: 'Autoevaluación',
   camera_metrics: 'Métricas de cámara',
   alert: 'Alerta',
+  vigilance_test: 'Prueba de vigilancia',
 })
 
 export const OPERATION_LABELS = Object.freeze({ create: 'Alta', update: 'Actualización' })

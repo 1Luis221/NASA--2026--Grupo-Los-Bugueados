@@ -49,13 +49,13 @@ function httpMessage(status, payload) {
 export function createApiClient({ baseUrl = '/api', fetchImpl = (...args) => globalThis.fetch(...args) } = {}) {
   const inflight = new Map() // url → { promise, controller, subscribers }
 
-  async function send(method, url, { body, signal, withStatus = false } = {}) {
+  async function send(method, url, { body, signal, withStatus = false, headers = {} } = {}) {
     const hasBody = body !== undefined
     let response
     try {
       response = await fetchImpl(url, {
         method,
-        headers: { accept: 'application/json', ...(hasBody && { 'content-type': 'application/json' }) },
+        headers: { accept: 'application/json', ...(hasBody && { 'content-type': 'application/json' }), ...headers },
         body: hasBody ? JSON.stringify(body) : undefined,
         signal,
       })
@@ -151,7 +151,7 @@ export function createApiClient({ baseUrl = '/api', fetchImpl = (...args) => glo
 
   return {
     get: (path, { query, signal } = {}) => sharedGet(buildUrl(baseUrl, path, query), signal),
-    post: (path, body, { signal, withStatus } = {}) => send('POST', buildUrl(baseUrl, path), { body, signal, withStatus }),
+    post: (path, body, { signal, withStatus, headers } = {}) => send('POST', buildUrl(baseUrl, path), { body, signal, withStatus, headers }),
     put: (path, body, { signal, withStatus } = {}) => send('PUT', buildUrl(baseUrl, path), { body, signal, withStatus }),
   }
 }

@@ -6,6 +6,7 @@ const ENTITY_EVENTS = Object.freeze({
   vital_signs: SOCKET_EVENTS.VITALS_RECORDED,
   wellness_check_in: SOCKET_EVENTS.CHECK_IN_SUBMITTED,
   camera_metrics: SOCKET_EVENTS.CAMERA_METRICS_RECORDED,
+  vigilance_test: SOCKET_EVENTS.VIGILANCE_TEST_RECORDED,
 })
 
 /** Nombre del evento en tiempo real para un SyncEvent aplicado. */

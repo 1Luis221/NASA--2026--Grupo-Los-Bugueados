@@ -4,6 +4,7 @@ import { CameraMetricsSchema, CameraMetricsStrictSchema } from './camera-metrics
 import { check, defineSchemas, errorInfoSchema, idSchema, isNotBefore, timestampSchema } from './common.js'
 import { CrewMemberSchema, CrewMemberStrictSchema } from './crew-member.js'
 import { SYNC_ACK_RESULTS, SYNC_ENTITY_TYPES, SYNC_OPERATIONS, SYNC_STATUSES, SYSTEM_NODES } from './enums.js'
+import { VigilanceTestSchema, VigilanceTestStrictSchema } from './vigilance-test.js'
 import { VitalSignsSchema, VitalSignsStrictSchema } from './vital-signs.js'
 import { WellnessCheckInSchema, WellnessCheckInStrictSchema } from './wellness-check-in.js'
 
@@ -14,6 +15,7 @@ export const SYNC_PAYLOAD_SCHEMAS = Object.freeze({
     vital_signs: VitalSignsSchema,
     wellness_check_in: WellnessCheckInSchema,
     camera_metrics: CameraMetricsSchema,
+    vigilance_test: VigilanceTestSchema,
     alert: AlertSchema,
   }),
   strict: Object.freeze({
@@ -21,6 +23,7 @@ export const SYNC_PAYLOAD_SCHEMAS = Object.freeze({
     vital_signs: VitalSignsStrictSchema,
     wellness_check_in: WellnessCheckInStrictSchema,
     camera_metrics: CameraMetricsStrictSchema,
+    vigilance_test: VigilanceTestStrictSchema,
     alert: AlertStrictSchema,
   }),
 })

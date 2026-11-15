@@ -24,6 +24,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "e2e:demo": "node scripts/e2e/demo.mjs",
+    "e2e:camera": "node scripts/e2e/camera-check.mjs",
+    "mediapipe:model": "node scripts/mediapipe-model.mjs",
     "a11y:contrast": "node packages/ui/scripts/contrast.mjs"
   },
   "devDependencies": {

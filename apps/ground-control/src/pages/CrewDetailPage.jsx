@@ -1,32 +1,27 @@
-import { ArrowLeft, Camera } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { idSchema } from '@astronaut-wellness/shared'
 import {
   AlertList,
+  CameraMetricsTable,
   Badge,
   Button,
   CREW_STATUS_LABELS,
   CheckInTable,
+  DimensionPanel,
   EmptyState,
   ErrorState,
   LoadingState,
   ROLE_LABELS,
-  SourceBadge,
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  VigilanceTestTable,
   VitalSignsChart,
   VitalSignsSummary,
   WellnessSummary,
-  formatMeasurement,
-  formatNumber,
-  formatUtc,
+  buildFatigueIndicators,
+  buildStressIndicators,
   labelFor,
   resolveCrewMember,
+  useNow,
 } from '@astronaut-wellness/ui'
 import { PageSection } from '@astronaut-wellness/ui'
 import { useRealtimeCollection } from '../realtime/realtime-context.js'
@@ -63,40 +58,6 @@ function Profile({ member }) {
   )
 }
 
-function CameraMetricsTable({ metrics }) {
-  return (
-    <Table>
-      <TableCaption>Métricas agregadas de cámara (sin imágenes)</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead scope="col">Fin de ventana (UTC)</TableHead>
-          <TableHead scope="col">Ventana</TableHead>
-          <TableHead scope="col">Rostro detectado</TableHead>
-          <TableHead scope="col">Parpadeo</TableHead>
-          <TableHead scope="col">Ojos cerrados</TableHead>
-          <TableHead scope="col">Bostezos</TableHead>
-          <TableHead scope="col">Origen</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {metrics.map((m) => (
-          <TableRow key={m.id}>
-            <TableCell>{formatUtc(m.recordedAt)}</TableCell>
-            <TableCell>{formatMeasurement(m.windowDuration)}</TableCell>
-            <TableCell>{m.faceDetected ? 'Sí' : 'No'}</TableCell>
-            <TableCell>{formatMeasurement(m.blinkRate)}</TableCell>
-            <TableCell>{m.eyeClosureRatio ? `${formatNumber(m.eyeClosureRatio.value * 100, { decimals: 0 })} % de la ventana` : '—'}</TableCell>
-            <TableCell>{formatMeasurement(m.yawnCount)}</TableCell>
-            <TableCell>
-              <SourceBadge source={m.source} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
-}
-
 export function CrewDetailPage() {
   const { id } = useParams()
   const validId = idSchema.safeParse(id).success
@@ -120,14 +81,18 @@ function CrewDetail({ id }) {
   const vitals = useRealtimeCollection('vital_signs', { crewMemberId: id, limit: 100 })
   const checkIns = useRealtimeCollection('wellness_check_in', { crewMemberId: id, limit: 50 })
   const camera = useRealtimeCollection('camera_metrics', { crewMemberId: id, limit: 50 })
+  const vigilance = useRealtimeCollection('vigilance_test', { crewMemberId: id, limit: 50 })
   const alerts = useRealtimeCollection('alert', { crewMemberId: id, limit: 500 })
 
-  const collections = [crew, vitals, checkIns, camera, alerts]
+  const collections = [crew, vitals, checkIns, camera, vigilance, alerts]
   const member = resolveCrewMember(id, new Map(crew.records.map((c) => [c.id, c])))
   const loading = collections.some((c) => c.loading)
   const error = collections.find((c) => c.error)?.error
   const reload = () => Promise.all(collections.map((c) => c.reload()))
-  const hasAnyData = member.known || vitals.records.length + checkIns.records.length + alerts.records.length > 0
+  const hasAnyData =
+    member.known || vitals.records.length + checkIns.records.length + alerts.records.length + camera.records.length + vigilance.records.length > 0
+  const now = useNow(30_000)
+  const sources = { vitals: vitals.records, checkIns: checkIns.records, cameraMetrics: camera.records, vigilanceTests: vigilance.records }
 
   return (
     <div className="space-y-6">
@@ -155,6 +120,22 @@ function CrewDetail({ id }) {
             <VitalSignsSummary reading={vitals.records[0]} emptyDescription="Ground API no ha recibido constantes de este tripulante." />
           </PageSection>
 
+          <PageSection
+            title="Fatiga"
+            description="Indicadores descriptivos con su fuente y fecha: sueño, somnolencia y fatiga autodeclaradas, rendimiento en la PVT y métricas faciales experimentales. No es un diagnóstico ni una puntuación combinada."
+            className="xl:col-span-2"
+          >
+            <DimensionPanel indicators={buildFatigueIndicators(sources)} now={now} label={`Indicadores de fatiga de ${member.displayName}`} />
+          </PageSection>
+
+          <PageSection
+            title="Respuesta al estrés"
+            description="Frecuencia cardiaca, HRV y actividad del sensor (simulados en esta demo) junto al estrés percibido. Se muestran por separado: no se combinan ni se interpretan clínicamente."
+            className="xl:col-span-2"
+          >
+            <DimensionPanel indicators={buildStressIndicators(sources)} now={now} label={`Indicadores de respuesta al estrés de ${member.displayName}`} />
+          </PageSection>
+
           <PageSection title="Historial de signos vitales" description={`Hasta ${100} lecturas más recientes.`} className="xl:col-span-2">
             <VitalSignsChart readings={vitals.records} />
           </PageSection>
@@ -175,16 +156,28 @@ function CrewDetail({ id }) {
             />
           </PageSection>
 
-          <PageSection title="Cámara" description="Métricas agregadas de análisis facial.">
-            {camera.records.length === 0 ? (
-              <EmptyState
-                icon={Camera}
-                title="Sin métricas de cámara"
-                description="Ground API no ha recibido métricas de cámara de este tripulante. El análisis por cámara a bordo aún no está implementado."
-              />
-            ) : (
-              <CameraMetricsTable metrics={camera.records} />
-            )}
+          <PageSection
+            title="Vigilancia cognitiva (PVT)"
+            description="Tiempos de reacción de la prueba realizada a bordo. Resultados descriptivos y verificables, sin interpretación clínica."
+            className="xl:col-span-2"
+          >
+            <VigilanceTestTable
+              tests={vigilance.records}
+              caption={`Pruebas de vigilancia de ${member.displayName}`}
+              emptyDescription="Ground API no ha recibido pruebas de vigilancia de este tripulante desde que se inició (los datos se guardan en memoria y se pierden al reiniciar las API)."
+            />
+          </PageSection>
+
+          <PageSection
+            title="Cámara"
+            description="Métricas faciales experimentales, agregadas por ventana a bordo (nunca imágenes)."
+            className="xl:col-span-2"
+          >
+            <CameraMetricsTable
+              metrics={camera.records}
+              caption={`Métricas de cámara de ${member.displayName}`}
+              emptyDescription="Ground API no ha recibido métricas de cámara de este tripulante desde que se inició (los datos se guardan en memoria y se pierden al reiniciar las API). Solo llegan si a bordo se activa «Enviar métricas agregadas»."
+            />
           </PageSection>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { Send } from 'lucide-react'
 import { WellnessCheckInSchema } from '@astronaut-wellness/shared'
-import { Alert, AlertDescription, AlertTitle, Button, CHECK_IN_SCALES, Input, Label, Textarea } from '@astronaut-wellness/ui'
+import { Alert, AlertDescription, AlertTitle, Button, CHECK_IN_SCALES, Input, KSS_SCALE, Label, Textarea } from '@astronaut-wellness/ui'
 import { emptyForm, issuesToFieldErrors, validateCheckIn } from '../check-in/check-in-form.js'
 import { useOnboardApi } from '../state/app-context.js'
 import { ScaleField } from './ScaleField.jsx'
@@ -122,6 +122,35 @@ export function CheckInForm({ crewMember, onSaved }) {
             disabled={submitting}
           />
         ))}
+      </div>
+
+      <div className="space-y-2" data-field="sleepiness">
+        <Label htmlFor={`${formId}-kss`}>Somnolencia ahora mismo (opcional)</Label>
+        <select
+          id={`${formId}-kss`}
+          name="sleepiness"
+          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-60 md:w-auto"
+          value={form.sleepiness}
+          onChange={(e) => update('sleepiness')(e.target.value)}
+          aria-invalid={fieldErrors.sleepiness ? true : undefined}
+          aria-describedby={`${formId}-kss-hint${fieldErrors.sleepiness ? ` ${formId}-kss-error` : ''}`}
+          disabled={submitting}
+        >
+          <option value="">Sin indicar</option>
+          {KSS_SCALE.map((level) => (
+            <option key={level.value} value={level.value}>
+              {level.value} · {level.label}
+            </option>
+          ))}
+        </select>
+        <p id={`${formId}-kss-hint`} className="text-xs text-muted-foreground">
+          Escala de somnolencia de Karolinska (KSS, 1–9): cómo te sientes en este momento. Distinta de la fatiga.
+        </p>
+        {fieldErrors.sleepiness && (
+          <p id={`${formId}-kss-error`} className="text-sm text-destructive">
+            {fieldErrors.sleepiness}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

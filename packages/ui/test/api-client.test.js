@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ApiError, buildUrl, createApiClient, isAbortError } from '../src/data/api-client.js'
 import { createFetchMock, deferred, httpResponse } from './helpers.js'
 
@@ -142,5 +142,14 @@ describe('createApiClient · cancelación y peticiones compartidas', () => {
     const { client, fetchImpl } = setup(() => httpResponse(201, { data: {} }))
     await Promise.all([client.post('/check-ins', { a: 1 }), client.post('/check-ins', { a: 1 })])
     expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('createApiClient · cabeceras adicionales', () => {
+  it('post añade las cabeceras indicadas sin perder accept ni content-type', async () => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ data: 1 }), { status: 201 }))
+    const client = createApiClient({ baseUrl: '/api', fetchImpl })
+    await client.post('/x', { a: 1 }, { headers: { 'X-Data-Fixture': '1' } })
+    expect(fetchImpl.mock.calls[0][1].headers).toEqual({ accept: 'application/json', 'content-type': 'application/json', 'X-Data-Fixture': '1' })
   })
 })

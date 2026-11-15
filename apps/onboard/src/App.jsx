@@ -14,6 +14,7 @@ const VitalsPage = page(() => import('./pages/VitalsPage.jsx'), 'VitalsPage')
 const CheckInPage = page(() => import('./pages/CheckInPage.jsx'), 'CheckInPage')
 const SyncPage = page(() => import('./pages/SyncPage.jsx'), 'SyncPage')
 const CameraPage = page(() => import('./pages/CameraPage.jsx'), 'CameraPage')
+const VigilancePage = page(() => import('./pages/VigilancePage.jsx'), 'VigilancePage')
 // Solo en desarrollo: en producción ni siquiera se genera el fragmento de esta página.
 const SimulationPage = import.meta.env.DEV ? page(() => import('./pages/SimulationPage.jsx'), 'SimulationPage') : null
 
@@ -22,7 +23,8 @@ const PAGES = {
   '/vitals': { element: <VitalsPage />, description: 'Mediciones simuladas con unidades, fecha y origen' },
   '/check-in': { element: <CheckInPage />, description: 'Registro de cómo te encuentras' },
   '/sync': { element: <SyncPage />, description: 'Enlace simulado y cola de envíos a Tierra' },
-  '/camera': { element: <CameraPage />, description: 'Análisis por cámara (pendiente)' },
+  '/camera': { element: <CameraPage />, description: 'Análisis facial local y experimental (sin vídeo)' },
+  '/vigilance': { element: <VigilancePage />, description: 'Prueba de vigilancia psicomotora (tiempo de reacción)' },
   ...(SimulationPage && {
     '/simulation': { element: <SimulationPage />, description: 'Controles de demostración (solo desarrollo)' },
   }),

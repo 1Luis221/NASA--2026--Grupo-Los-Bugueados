@@ -48,6 +48,7 @@ export function fixtures() {
       checkIn({ recordedAt: '2026-11-14T07:00:00.000Z', mood: 4, sleepDuration: undefined }),
     ],
     camera: [],
+    vigilanceTests: [],
     alerts: [
       alert({ title: 'Enlace nave–Tierra interrumpido', status: 'active', severity: 'warning', createdAt: '2026-11-14T10:01:00.000Z', updatedAt: '2026-11-14T10:01:00.000Z' }),
       alert({
@@ -82,6 +83,7 @@ export const emptyFixtures = () => ({
   vitals: [],
   checkIns: [],
   camera: [],
+  vigilanceTests: [],
   alerts: [],
   stats: { accepted: 0, duplicate: 0, rejected: 0, processedEvents: 0, lastSequenceByOrigin: {}, recentRejections: [] },
   syncEvents: [],
@@ -97,6 +99,7 @@ export function createFakeGroundApi(data) {
     listVitals: vi.fn(async ({ crewMemberId, limit } = {}) => list(limited(byCrew(data.vitals, crewMemberId), limit))),
     listCheckIns: vi.fn(async ({ crewMemberId, limit } = {}) => list(limited(byCrew(data.checkIns, crewMemberId), limit))),
     listCameraMetrics: vi.fn(async ({ crewMemberId, limit } = {}) => list(limited(byCrew(data.camera, crewMemberId), limit))),
+    listVigilanceTests: vi.fn(async ({ crewMemberId, limit } = {}) => list(limited(byCrew(data.vigilanceTests ?? [], crewMemberId), limit))),
     listAlerts: vi.fn(async ({ status, severity, limit } = {}) =>
       list(limited(data.alerts.filter((a) => (!status || a.status === status) && (!severity || a.severity === severity)), limit)),
     ),

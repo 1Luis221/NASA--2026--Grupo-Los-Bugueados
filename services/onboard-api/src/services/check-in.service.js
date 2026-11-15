@@ -7,7 +7,7 @@ import { HttpError } from '../middleware/errors.js'
  */
 export const CheckInInputSchema = WellnessCheckInStrictSchema.omit({ id: true, recordedAt: true, source: true })
 
-export function createCheckInService({ crewService, checkInStore, queue, clock, generateId }) {
+export function createCheckInService({ crewService, checkInStore, queue, clock, generateId, onCreated = () => {} }) {
   return {
     /** `input` ya validado con CheckInInputSchema. */
     submit(input) {
@@ -25,6 +25,7 @@ export function createCheckInService({ crewService, checkInStore, queue, clock, 
       })
       checkInStore.save(checkIn)
       queue.enqueue({ entityType: 'wellness_check_in', operation: 'create', payload: checkIn })
+      onCreated(checkIn)
       return checkIn
     },
 

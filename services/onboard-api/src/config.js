@@ -9,6 +9,15 @@ const toNumber = (value, fallback) => {
   return Number.isFinite(n) ? n : fallback
 }
 
+function parseJson(value) {
+  if (!value) return {}
+  try {
+    return JSON.parse(value)
+  } catch {
+    throw new Error('ALERT_RULES_JSON no es JSON válido')
+  }
+}
+
 /**
  * Configuración del servicio a partir de variables de entorno (ver .env.example).
  * Se exporta como función para que los tests construyan configuraciones aisladas.
@@ -40,6 +49,13 @@ export function loadConfig(env = process.env) {
       maxAttempts: toInt(env.SYNC_MAX_ATTEMPTS, 10),
       backoffBaseMs: toInt(env.SYNC_BACKOFF_BASE_MS, 1000),
       backoffMaxMs: toInt(env.SYNC_BACKOFF_MAX_MS, 30000),
+    }),
+
+    alerts: Object.freeze({
+      /** Comprobación periódica de datos desactualizados (ms). 0 = desactivada. */
+      staleCheckMs: toInt(env.ALERT_STALE_CHECK_MS, 60_000),
+      /** Cambios a las reglas de demostración, p. ej. {"pvtLapses":{"minLapses":3}}. */
+      rules: parseJson(env.ALERT_RULES_JSON),
     }),
 
     link: Object.freeze({

@@ -13,6 +13,7 @@ const GENERATOR_BANDS = Object.freeze({
   systolic: { min: 100, max: 140, step: 3, decimals: 0 },
   diastolic: { min: 60, max: 90, step: 2, decimals: 0 },
   heartRateVariability: { min: 20, max: 90, step: 4, decimals: 0 },
+  activityLevel: { min: 1, max: 6, step: 0.4, decimals: 1 },
 })
 
 const round = (value, decimals) => Number(value.toFixed(decimals))
@@ -57,7 +58,9 @@ export function createTelemetrySimulator({ rng, clock, generateId }) {
       oxygenSaturation: { value: v('oxygenSaturation'), unit: UNITS.PERCENT },
       bodyTemperature: { value: v('bodyTemperature'), unit: UNITS.CELSIUS },
       bloodPressure: { systolic: v('systolic'), diastolic: v('diastolic'), unit: UNITS.MMHG },
+      // RMSSD SIMULADO: paseo aleatorio, no derivado de la frecuencia cardiaca.
       heartRateVariability: { value: v('heartRateVariability'), unit: UNITS.MILLISECONDS },
+      activityLevel: { value: v('activityLevel'), unit: UNITS.MET },
     })
   }
 

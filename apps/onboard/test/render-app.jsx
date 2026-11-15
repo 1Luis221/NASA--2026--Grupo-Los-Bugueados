@@ -64,6 +64,8 @@ export function fixtures() {
       vital({ recordedAt: '2026-11-14T10:00:00.000Z', heartRate: { value: 70, unit: 'bpm' } }),
     ],
     checkIns: [],
+    cameraMetrics: [],
+    vigilanceTests: [],
     alerts: [],
     link: { state: 'connected', latencyMs: 0, degradedLatencyMs: 1500, degradedFailureRate: 0.3, pendingFailures: 0, changedAt: '2026-11-14T09:00:00.000Z' },
     events: [syncEvent({ status: 'acknowledged' }), syncEvent({ status: 'acknowledged' })],
@@ -102,6 +104,22 @@ export function createFakeOnboardApi(state = fixtures()) {
       state.events.push(syncEvent({ entityType: 'wellness_check_in', entityId: checkIn.id, status: 'pending' }))
       deliverPending()
       return { status: 201, body: { data: checkIn } }
+    }),
+    listCameraMetrics: vi.fn(async ({ crewMemberId, limit } = {}) => list(limited(byCrew(state.cameraMetrics ?? [], crewMemberId), limit))),
+    submitCameraMetrics: vi.fn(async (body) => {
+      const record = { ...body, id: crypto.randomUUID(), recordedAt: new Date().toISOString(), source: { type: 'camera', simulated: false, deviceId: 'onboard-browser-camera' } }
+      ;(state.cameraMetrics ??= []).unshift(record)
+      state.events.push(syncEvent({ entityType: 'camera_metrics', entityId: record.id, status: 'pending' }))
+      deliverPending()
+      return { status: 201, body: { data: record } }
+    }),
+    listVigilanceTests: vi.fn(async ({ crewMemberId, limit } = {}) => list(limited(byCrew(state.vigilanceTests ?? [], crewMemberId), limit))),
+    submitVigilanceTest: vi.fn(async (body) => {
+      const record = { ...body, id: crypto.randomUUID(), recordedAt: new Date().toISOString(), source: { type: 'cognitive_test', simulated: false, deviceId: 'onboard-ui' } }
+      ;(state.vigilanceTests ??= []).unshift(record)
+      state.events.push(syncEvent({ entityType: 'vigilance_test', entityId: record.id, status: 'pending' }))
+      deliverPending()
+      return { status: 201, body: { data: record } }
     }),
     getSyncStatus: vi.fn(async () => {
       const byStatus = Object.fromEntries(SYNC_STATUSES.map((s) => [s, state.events.filter((e) => e.status === s).length]))

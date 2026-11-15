@@ -161,3 +161,67 @@ describe('ground-api HTTP', () => {
     })
   })
 })
+
+describe('Bloque 1: pruebas de vigilancia y métricas de cámara', () => {
+  it('acepta una prueba PVT verificable, la guarda y la expone en /api/vigilance-tests', async () => {
+    const { api, ctx, notifier } = setup()
+    const event = makeEvent({ entityType: 'vigilance_test' })
+    await api.post('/api/sync/events').send(event).expect(201)
+    expect(ctx.recordStores.vigilance_test.get(event.entityId)).toEqual(event.payload)
+    expect(notifier.publish).toHaveBeenCalledOnce()
+
+    const res = await api.get(`/api/vigilance-tests?crewMemberId=${event.payload.crewMemberId}`).expect(200)
+    expect(res.body.data.map((t) => t.id)).toEqual([event.entityId])
+  })
+
+  it('rechaza (422) una prueba cuyo resumen no coincide con los ensayos', async () => {
+    const { api, ctx } = setup()
+    const event = makeEvent({ entityType: 'vigilance_test' })
+    event.payload.summary.meanReactionTimeMs = 100
+    const res = await api.post('/api/sync/events').send(event).expect(422)
+    expect(res.body.error.message).toContain('payload.summary.meanReactionTimeMs')
+    expect(ctx.recordStores.vigilance_test.size()).toBe(0)
+  })
+
+  it('acepta métricas de cámara reales y conserva su procedencia', async () => {
+    const { api, ctx } = setup()
+    const event = makeEvent({ entityType: 'camera_metrics', payload: { source: { type: 'camera', simulated: false, deviceId: 'onboard-browser-camera' } } })
+    await api.post('/api/sync/events').send(event).expect(201)
+    expect(ctx.recordStores.camera_metrics.get(event.entityId).source).toEqual({ type: 'camera', simulated: false, deviceId: 'onboard-browser-camera' })
+  })
+})
+
+describe('Bloque 2: alertas demostrativas desde la nave', () => {
+  const rule = { id: 'demo.pvt.lapses', name: 'Lapsos (regla demostrativa)', demonstrative: true, parameters: { minLapses: 5 } }
+  const evidence = (id) => ({ entityType: 'vigilance_test', id, recordedAt: '2026-11-14T07:00:00.000Z', source: { type: 'cognitive_test', simulated: false }, summary: 'PVT-B: 6 lapsos' })
+
+  it('acepta regla y evidencia, aplica la actualización de la MISMA alerta y no duplica un reenvío', async () => {
+    const { api, ctx, notifier } = setup()
+    const alertId = crypto.randomUUID()
+    const created = makeEvent({
+      entityType: 'alert',
+      payload: { id: alertId, category: 'cognitive', status: 'active', rule, evidence: [evidence(crypto.randomUUID())], dedupKey: 'demo.pvt.lapses:x', updatedAt: '2026-11-14T07:31:00.000Z' },
+    })
+    delete created.payload.acknowledgedAt
+    delete created.payload.acknowledgedBy
+    await postEvent(api, created).expect(201)
+    await postEvent(api, created).expect(200) // reenvío tras un acuse perdido: duplicate
+
+    const updated = makeEvent({
+      entityType: 'alert',
+      operation: 'update',
+      payload: { ...created.payload, evidence: [evidence(crypto.randomUUID()), ...created.payload.evidence], updatedAt: '2026-11-14T08:00:00.000Z' },
+    })
+    delete updated.payload.acknowledgedAt // el ejemplo base es una alerta reconocida
+    delete updated.payload.acknowledgedBy
+    await postEvent(api, updated).expect(201)
+
+    const res = await api.get('/api/alerts').expect(200)
+    const stored = res.body.data.filter((a) => a.id === alertId)
+    expect(stored).toHaveLength(1)
+    expect(stored[0]).toMatchObject({ category: 'cognitive', rule: { demonstrative: true }, dedupKey: 'demo.pvt.lapses:x' })
+    expect(stored[0].evidence).toHaveLength(2)
+    expect(ctx.recordStores.alert.size()).toBe(1)
+    expect(notifier.publish).toHaveBeenCalledTimes(2) // create + update, nunca el duplicado
+  })
+})

@@ -147,6 +147,18 @@ Opcionales: `sleepDuration` (`h`, 0–24) y `notes` (texto ≤ 500).
 }
 ```
 
+### Bloque 2: fatiga, estrés y alertas
+
+- **WellnessCheckIn.sleepiness** (opcional): somnolencia **ahora mismo** con la Karolinska Sleepiness Scale, un entero de 1 («extremadamente despierto») a 9 («luchando contra el sueño»). Autodeclarada y distinta de `fatigue` (1–5).
+- **VitalSigns.activityLevel** (opcional): actividad física reciente en `MET` (0–25; 1 ≈ reposo), estimada por el dispositivo. En la demo es **simulada**.
+- **VitalSigns.heartRateVariability**: se documenta como **RMSSD** (ms), calculado por el dispositivo a partir de los intervalos entre latidos. No se deriva de `heartRate`. En la demo es **simulado** y sin valor clínico.
+- **Alert**: nuevas categorías `cognitive` (PVT) y `data_quality` (datos insuficientes o desactualizados, que **no** son alertas de bienestar), y campos opcionales:
+  - `rule { id, name, demonstrative, parameters? }`: regla que la generó; `demonstrative: true` en las reglas de la demo.
+  - `evidence[] { entityType, id, recordedAt, source { type, simulated }, summary }` (como máximo 20): registros que la sustentan.
+  - `dedupKey`: como máximo una alerta abierta por clave (regla + tripulante).
+
+Detalles en [alerts.md](alerts.md).
+
 ### CameraMetrics
 
 Indicadores **agregados** de una ventana de análisis que termina en `recordedAt`. Por privacidad nunca incluye imágenes ni landmarks en bruto.
@@ -317,6 +329,33 @@ El transporte, la política de reintentos (backoff) y el registro de ids procesa
 
 `LINK_STATES` (`connected` · `degraded` · `disconnected`) describe el estado del enlace en sí, independiente de cada evento.
 
+Generación real a bordo (pantalla **Cámara** de Onboard): MediaPipe Face Landmarker 1.2.3 en el navegador, con procedencia `{ type: 'camera', simulated: false, deviceId: 'onboard-browser-camera' }` y `model: { name: 'mediapipe-face-landmarker', version: '1.2.3' }`. Las cifras son **experimentales**: los umbrales de la señal (ojo cerrado ≥ 0,5 con histéresis a 0,35; parpadeo ≤ 500 ms; bostezo = `jawOpen` ≥ 0,6 durante ≥ 1,5 s) son de procesamiento, configurables y sin significado clínico. `blinkRate` se omite si supera 120/min (medida no fiable).
+
+### VigilanceTest
+
+Resultado de una **prueba de vigilancia psicomotora (PVT)** realizada a bordo. `source.type` es `cognitive_test` (Onboard API pone `{ type: 'cognitive_test', simulated: false, deviceId: 'onboard-ui' }`); `testType` es `pvt`.
+
+**Procedencia:** la asigna siempre Onboard API, nunca el cliente (un `source` en el cuerpo se rechaza con 400).
+- PVT respondida por una persona en la interfaz → `{ type: 'cognitive_test', simulated: false, deviceId: 'onboard-ui' }`.
+- PVT respondida por un script o enviada como fixture (solo en desarrollo, cabecera `X-Data-Fixture: 1`) → `simulated: true, deviceId: 'e2e-fixture'`.
+
+**Protocolo** (incluido en cada resultado). Por defecto, PVT-B (Basner et al., 2011): `durationSeconds` 180, intervalo entre estímulos `isiMinMs`–`isiMaxMs` 1000–4000 ms, `lapseThresholdMs` 355, `falseStartThresholdMs` 100, `responseTimeoutMs` 3000. Onboard ofrece también `PVT-demo` (60 s, mismos umbrales), marcado como **no estándar**. Son parámetros de **medición** de la prueba, no umbrales clínicos.
+
+**Ensayos** (`trials`, 1–1000, todos incluidos): `{ index, stimulusOffsetMs, reactionTimeMs, outcome }`.
+
+| `outcome` | Regla (`classifyPvtTrial`) |
+|---|---|
+| `false_start` | respuesta sin estímulo (`stimulusOffsetMs: null`) o con TR < `falseStartThresholdMs` |
+| `timeout` (omisión) | estímulo sin respuesta en `responseTimeoutMs` (`reactionTimeMs: null`) |
+| `lapse` | TR ≥ `lapseThresholdMs` |
+| `valid` | resto |
+
+**Resumen** (`summarizePvtTrials`): recuentos por resultado, `errorCount` = falsas salidas + omisiones, y TR medio, mediano, media del 10 % más rápido y del 10 % más lento, calculados solo con respuestas a un estímulo (válidas y lapsos), redondeados a 0,1 ms; `null` si no hay ninguna.
+
+**Verificable:** el esquema recalcula la clasificación de cada ensayo y el resumen, y rechaza el registro si no coinciden (tolerancia 0,05 ms en las medias). También exige índices consecutivos, que no haya TR sin estímulo, TR ≤ `responseTimeoutMs`, estímulos dentro de la duración y un protocolo coherente. Ground API vuelve a validarlo al recibirlo, así que un resultado alterado por el camino se rechaza.
+
+Ejemplo: `exampleVigilanceTest` en `@astronaut-wellness/shared/examples` (6 ensayos: 2 válidos, 1 lapso, 2 falsas salidas, 1 omisión).
+
 ## Eventos Socket.IO
 
 Convención `dominio:acción`. ground-api emite los eventos de entidades y alertas hacia el dashboard (ver [communications.md](communications.md)); los de sincronización y enlace están reservados porque la sincronización nave–Tierra va por HTTP.
@@ -326,6 +365,7 @@ Convención `dominio:acción`. ground-api emite los eventos de entidades y alert
 | `VITALS_RECORDED` | `vitals:recorded` | `VitalSigns` |
 | `CAMERA_METRICS_RECORDED` | `camera:metrics-recorded` | `CameraMetrics` |
 | `CHECK_IN_SUBMITTED` | `check-in:submitted` | `WellnessCheckIn` |
+| `VIGILANCE_TEST_RECORDED` | `vigilance:test-recorded` | `VigilanceTest` |
 | `CREW_UPDATED` | `crew:updated` | `CrewMember` |
 | `ALERT_CREATED` / `ALERT_UPDATED` | `alert:created` / `alert:updated` | `Alert` |
 | `SYNC_EVENT` | `sync:event` | `SyncEvent` |

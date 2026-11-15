@@ -98,6 +98,14 @@ async function connectPage(wsUrl, commandTimeoutMs) {
       await sleep(120)
     },
     type: (text) => send('Input.insertText', { text }),
+    /** Script que se ejecuta antes que los de cada documento (instrumentación de pruebas). */
+    addInitScript: (source) => send('Page.addScriptToEvaluateOnNewDocument', { source }),
+    /** Captura PNG de la página (Buffer). */
+    // Una pestaña en segundo plano no se pinta: se trae al frente antes de capturar.
+    screenshot: async () => {
+      await send('Page.bringToFront')
+      return Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64')
+    },
     close: () => ws.close(),
   }
   return page
@@ -107,18 +115,19 @@ async function connectPage(wsUrl, commandTimeoutMs) {
  * Lanza el navegador headless. `registry` (createProcessRegistry) permite que
  * la limpieza general también lo detenga si algo falla.
  */
-export async function launchBrowser({ executable = findBrowser(), port = 9333, registry, commandTimeoutMs = 15_000 } = {}) {
+export async function launchBrowser({ executable = findBrowser(), port = 9333, registry, commandTimeoutMs = 15_000, extraArgs = [], disableGpu = true, headless = true } = {}) {
   if (!executable) throw new Error('No se encontró Microsoft Edge ni Google Chrome (define E2E_BROWSER)')
   const profileDir = mkdtempSync(path.join(os.tmpdir(), 'aws-e2e-profile-'))
   const args = [
-    '--headless=new',
+    ...(headless ? ['--headless=new'] : []),
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${profileDir}`,
     '--no-first-run',
     '--no-default-browser-check',
-    '--disable-gpu',
+    ...(disableGpu ? ['--disable-gpu'] : []),
     '--disable-extensions',
     '--force-prefers-reduced-motion',
+    ...extraArgs,
     'about:blank',
   ]
   const proc = registry.start('navegador', executable, args)

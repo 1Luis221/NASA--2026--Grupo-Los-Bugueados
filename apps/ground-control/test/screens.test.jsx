@@ -1,6 +1,7 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { SOCKET_EVENTS } from '@astronaut-wellness/shared'
+import { exampleVigilanceTest } from '@astronaut-wellness/shared/examples'
 import { ApiError } from '@astronaut-wellness/ui'
 import { vital } from './helpers.js'
 import { ANA_ID, UNKNOWN_ID, createFakeGroundApi, emptyFixtures, fixtures, renderApp } from './render-app.jsx'
@@ -120,6 +121,22 @@ describe('Detalle del tripulante', () => {
     expect(within(camera).getByText('Sin métricas de cámara')).toBeInTheDocument()
   })
 
+  it('fatiga y respuesta al estrés: indicadores separados con fuente, fecha y avisos de datos faltantes', async () => {
+    renderApp({ path: `/crew/${ANA_ID}` })
+    const fatigue = await screen.findByRole('region', { name: 'Fatiga' })
+    await waitFor(() => expect(within(fatigue).getByRole('article', { name: 'Fatiga autodeclarada' })).toHaveTextContent('3/5'))
+    expect(within(fatigue).getByRole('article', { name: 'Ojos cerrados (cámara)' })).toHaveTextContent(/Sin datos..*consentir el envío/)
+    expect(within(fatigue).getByRole('article', { name: 'PVT · tiempo de reacción medio' })).toHaveTextContent('Sin datos.')
+    expect(within(fatigue).getByText(/No es un diagnóstico ni una puntuación combinada/)).toBeInTheDocument()
+
+    const stress = screen.getByRole('region', { name: 'Respuesta al estrés' })
+    const hr = within(stress).getByRole('article', { name: 'Frecuencia cardiaca' })
+    expect(hr).toHaveTextContent('76 lpm')
+    expect(within(hr).getByText('Simulado')).toBeInTheDocument()
+    expect(within(stress).getByRole('article', { name: 'Estrés percibido' })).toHaveTextContent('2/5')
+    expect(within(stress).getByRole('article', { name: /RMSSD/ })).toHaveTextContent(/No se deriva del pulso/)
+  })
+
   it('tripulante desconocido: muestra sus mediciones sin perfil inventado', async () => {
     renderApp({ path: `/crew/${UNKNOWN_ID}` })
     expect(await screen.findByRole('heading', { level: 2, name: 'Tripulante desconocido · c4a8e2f1' })).toBeInTheDocument()
@@ -202,6 +219,81 @@ describe('Tiempo real', () => {
     expect(within(history).getByText(/^Frecuencia cardiaca: 3 lecturas .*última 81 lpm/)).toBeInTheDocument()
     const last = screen.getByRole('region', { name: 'Última medición' })
     expect(within(last).getByText('81 lpm')).toBeInTheDocument()
+  })
+
+  it('vigilance:test-recorded añade la prueba PVT del tripulante con su procedencia (e ignora las inválidas)', async () => {
+    const { socket } = renderApp({ path: `/crew/${ANA_ID}` })
+    const section = await screen.findByRole('region', { name: 'Vigilancia cognitiva (PVT)' })
+    await waitFor(() => expect(within(section).getByText(/Ground API no ha recibido pruebas de vigilancia de este tripulante desde que se inició.*memoria/)).toBeInTheDocument())
+
+    const test = { ...structuredClone(exampleVigilanceTest), id: crypto.randomUUID(), crewMemberId: ANA_ID }
+    act(() => {
+      socket.serverEmit(SOCKET_EVENTS.VIGILANCE_TEST_RECORDED, test)
+      socket.serverEmit(SOCKET_EVENTS.VIGILANCE_TEST_RECORDED, { ...test, id: crypto.randomUUID(), summary: { ...test.summary, lapseCount: 99 } }) // no verificable
+    })
+
+    const table = await within(section).findByRole('table')
+    expect(within(table).getAllByRole('row')).toHaveLength(2)
+    expect(within(table).getByText('346 ms')).toBeInTheDocument() // TR medio 345,7
+    expect(within(table).getByText('Dato real')).toHaveAttribute('title', expect.stringContaining('Prueba cognitiva'))
+  })
+
+  it('una alerta demostrativa llega en tiempo real con su regla y evidencia', async () => {
+    const { socket } = renderApp({ path: `/crew/${ANA_ID}` })
+    const alerts = await screen.findByRole('region', { name: 'Alertas relacionadas' })
+    act(() =>
+      socket.serverEmit(SOCKET_EVENTS.ALERT_CREATED, {
+        id: crypto.randomUUID(),
+        crewMemberId: ANA_ID,
+        origin: 'onboard',
+        category: 'cognitive',
+        severity: 'warning',
+        status: 'active',
+        title: 'Lapsos frecuentes en la prueba de vigilancia',
+        rule: { id: 'demo.pvt.lapses', name: 'Lapsos (regla demostrativa)', demonstrative: true, parameters: { minLapses: 5 } },
+        evidence: [{ entityType: 'vigilance_test', id: crypto.randomUUID(), recordedAt: '2026-11-14T10:00:00.000Z', source: { type: 'cognitive_test', simulated: false }, summary: 'PVT-B: 6 lapsos' }],
+        dedupKey: `demo.pvt.lapses:${ANA_ID}`,
+        createdAt: '2026-11-14T10:00:01.000Z',
+        updatedAt: '2026-11-14T10:00:01.000Z',
+      }),
+    )
+    expect(await within(alerts).findByText('Lapsos frecuentes en la prueba de vigilancia')).toBeInTheDocument()
+    expect(within(alerts).getByText('Regla demostrativa')).toBeInTheDocument()
+    expect(within(alerts).getByText('Evidencia (1)')).toBeInTheDocument()
+  })
+
+  it('alert:updated de la MISMA alerta (nueva evidencia y resolución) reemplaza la fila; un duplicado no la repite', async () => {
+    const { socket } = renderApp({ path: `/crew/${ANA_ID}` })
+    const region = await screen.findByRole('region', { name: 'Alertas relacionadas' })
+    const ev = (id) => ({ entityType: 'vigilance_test', id, recordedAt: '2026-11-14T10:00:00.000Z', source: { type: 'cognitive_test', simulated: false }, summary: 'PVT-B' })
+    const alert = {
+      id: crypto.randomUUID(),
+      crewMemberId: ANA_ID,
+      origin: 'onboard',
+      category: 'cognitive',
+      severity: 'warning',
+      status: 'active',
+      title: 'Lapsos frecuentes en la prueba de vigilancia',
+      rule: { id: 'demo.pvt.lapses', name: 'Lapsos', demonstrative: true },
+      evidence: [ev(crypto.randomUUID())],
+      dedupKey: `demo.pvt.lapses:${ANA_ID}`,
+      createdAt: '2026-11-14T10:00:01.000Z',
+      updatedAt: '2026-11-14T10:00:01.000Z',
+    }
+    act(() => socket.serverEmit(SOCKET_EVENTS.ALERT_CREATED, alert))
+    const updated = { ...alert, evidence: [ev(crypto.randomUUID()), ...alert.evidence], updatedAt: '2026-11-14T10:05:00.000Z' }
+    act(() => {
+      socket.serverEmit(SOCKET_EVENTS.ALERT_UPDATED, updated)
+      socket.serverEmit(SOCKET_EVENTS.ALERT_UPDATED, structuredClone(updated)) // duplicado
+    })
+    expect(await within(region).findByText('Evidencia (2)')).toBeInTheDocument()
+    expect(within(region).getAllByText('Lapsos frecuentes en la prueba de vigilancia')).toHaveLength(1)
+
+    act(() => socket.serverEmit(SOCKET_EVENTS.ALERT_UPDATED, { ...updated, status: 'resolved', resolvedAt: '2026-11-14T10:10:00.000Z', updatedAt: '2026-11-14T10:10:00.000Z' }))
+    act(() => socket.serverEmit(SOCKET_EVENTS.ALERT_UPDATED, updated)) // versión antigua que llega tarde: no revierte
+    const row = () => within(region).getByText('Lapsos frecuentes en la prueba de vigilancia').closest('tr')
+    await waitFor(() => expect(within(row()).getByText('Resuelta')).toBeInTheDocument())
+    expect(within(region).getAllByText('Lapsos frecuentes en la prueba de vigilancia')).toHaveLength(1)
   })
 
   it('alert:updated actualiza el contador de alertas activas', async () => {
