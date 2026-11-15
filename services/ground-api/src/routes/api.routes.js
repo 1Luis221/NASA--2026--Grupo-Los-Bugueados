@@ -21,6 +21,7 @@ export function createApiRouter(ctx) {
   router.get('/vitals', validate(RecordsQuerySchema, 'query'), records.listVitals)
   router.get('/check-ins', validate(RecordsQuerySchema, 'query'), records.listCheckIns)
   router.get('/camera-metrics', validate(RecordsQuerySchema, 'query'), records.listCameraMetrics)
+  router.get('/vigilance-tests', validate(RecordsQuerySchema, 'query'), records.listVigilanceTests)
   router.get('/alerts', validate(AlertsQuerySchema, 'query'), records.listAlerts)
 
   return router

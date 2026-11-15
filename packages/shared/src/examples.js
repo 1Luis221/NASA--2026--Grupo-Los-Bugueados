@@ -1,3 +1,5 @@
+import { PVT_DEFAULT_PROTOCOL, summarizePvtTrials } from './schemas/vigilance-test.js'
+
 /**
  * Ejemplos válidos de cada entidad. Los tests garantizan que cumplen sus
  * esquemas, así que sirven como documentación viva y como datos semilla
@@ -106,4 +108,25 @@ export const exampleSyncAck = Object.freeze({
   destination: 'onboard',
   result: 'accepted',
   receivedAt: '2026-11-14T10:01:31.000Z',
+})
+
+/** Prueba de vigilancia psicomotora (PVT) real a bordo: 6 ensayos de ejemplo. */
+const PVT_EXAMPLE_TRIALS = Object.freeze([
+  { index: 0, stimulusOffsetMs: 2100, reactionTimeMs: 245, outcome: 'valid' },
+  { index: 1, stimulusOffsetMs: 4900, reactionTimeMs: 280, outcome: 'valid' },
+  { index: 2, stimulusOffsetMs: null, reactionTimeMs: null, outcome: 'false_start' },
+  { index: 3, stimulusOffsetMs: 9800, reactionTimeMs: 512, outcome: 'lapse' },
+  { index: 4, stimulusOffsetMs: 12300, reactionTimeMs: 61, outcome: 'false_start' },
+  { index: 5, stimulusOffsetMs: 15900, reactionTimeMs: null, outcome: 'timeout' },
+])
+
+export const exampleVigilanceTest = Object.freeze({
+  id: '0f9cb517-fc4d-467d-a1ca-76d849818bf2',
+  crewMemberId: CREW_ID,
+  recordedAt: '2026-11-14T11:00:00.000Z',
+  source: { type: 'cognitive_test', simulated: false, deviceId: 'onboard-ui' },
+  testType: 'pvt',
+  protocol: { ...PVT_DEFAULT_PROTOCOL },
+  trials: PVT_EXAMPLE_TRIALS,
+  summary: summarizePvtTrials(PVT_EXAMPLE_TRIALS, PVT_DEFAULT_PROTOCOL),
 })

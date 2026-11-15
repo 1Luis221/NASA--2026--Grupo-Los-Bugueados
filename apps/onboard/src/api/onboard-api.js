@@ -19,6 +19,20 @@ export function createOnboardApi(client = createApiClient({ baseUrl: API_PREFIX 
      * Devuelve { status, body } para poder exigir 201 Created antes de confirmar.
      */
     submitCheckIn: (body, { signal } = {}) => client.post('/check-ins', body, { signal, withStatus: true }),
+    listCameraMetrics: ({ crewMemberId, limit, signal } = {}) =>
+      client.get('/camera-metrics', { query: { crewMemberId, limit }, signal }),
+    /** Cuerpo: métricas AGREGADAS de una ventana (CameraMetrics sin id, recordedAt ni source). Nunca imágenes. */
+    submitCameraMetrics: (body, { signal } = {}) => client.post('/camera-metrics', body, { signal, withStatus: true }),
+    listVigilanceTests: ({ crewMemberId, limit, signal } = {}) =>
+      client.get('/vigilance-tests', { query: { crewMemberId, limit }, signal }),
+    /**
+     * Cuerpo: VigilanceTest sin id, recordedAt ni source. Devuelve { status, body }.
+     * `automated: true` (solo en desarrollo): las respuestas no las dio una persona
+     * (p. ej. el E2E). Se envía X-Data-Fixture y Onboard API lo guarda como SIMULADO.
+     * Solo puede REBAJAR la procedencia: un cliente nunca puede declararse "real".
+     */
+    submitVigilanceTest: (body, { signal, automated = false } = {}) =>
+      client.post('/vigilance-tests', body, { signal, withStatus: true, ...(automated && import.meta.env.DEV && devTools && { headers: { 'X-Data-Fixture': '1' } }) }),
     listAlerts: ({ status, severity, limit, signal } = {}) =>
       client.get('/alerts', { query: { status, severity, limit }, signal }),
 

@@ -7,7 +7,7 @@
 export const SYSTEM_NODES = Object.freeze(['onboard', 'ground'])
 
 /** Modalidad de captura de un dato. La simulación se indica aparte (source.simulated). */
-export const DATA_SOURCE_TYPES = Object.freeze(['sensor', 'camera', 'self_report'])
+export const DATA_SOURCE_TYPES = Object.freeze(['sensor', 'camera', 'self_report', 'cognitive_test'])
 
 export const CREW_ROLES = Object.freeze([
   'commander',
@@ -33,6 +33,10 @@ export const ALERT_CATEGORIES = Object.freeze([
   'camera',
   'communication',
   'system',
+  /** Rendimiento en pruebas cognitivas (PVT). */
+  'cognitive',
+  /** Datos insuficientes o desactualizados: NO es una alerta de bienestar. */
+  'data_quality',
 ])
 
 /** Entidades que pueden viajar entre nave y tierra dentro de un SyncEvent. */
@@ -42,7 +46,18 @@ export const SYNC_ENTITY_TYPES = Object.freeze([
   'wellness_check_in',
   'camera_metrics',
   'alert',
+  'vigilance_test',
 ])
+
+/**
+ * Resultado de cada ensayo de la prueba de vigilancia psicomotora (PVT):
+ * - valid:       respuesta entre el umbral de falsa salida y el de lapso.
+ * - lapse:       respuesta lenta (≥ umbral de lapso del protocolo).
+ * - false_start: respuesta anticipada (antes del estímulo o más rápida que el umbral).
+ * - timeout:     sin respuesta dentro del tiempo máximo (error de omisión).
+ * Son definiciones de MEDICIÓN del protocolo, no criterios clínicos.
+ */
+export const PVT_OUTCOMES = Object.freeze(['valid', 'lapse', 'false_start', 'timeout'])
 
 export const SYNC_OPERATIONS = Object.freeze(['create', 'update'])
 
@@ -87,4 +102,6 @@ export const UNITS = Object.freeze({
   COUNT: 'count',
   HOURS: 'h',
   SECONDS: 's',
+  /** Equivalente metabólico de la actividad (1 MET ≈ reposo). */
+  MET: 'MET',
 })

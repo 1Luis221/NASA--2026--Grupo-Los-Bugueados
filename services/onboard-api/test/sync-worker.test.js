@@ -141,7 +141,7 @@ describe('ciclo de vida y limpieza de recursos', () => {
       const { ctx } = createTestContext({ env: { TELEMETRY_INTERVAL_MS: '5000', SYNC_INTERVAL_MS: '1000' } })
       ctx.start()
       ctx.start() // idempotente
-      expect(vi.getTimerCount()).toBe(2)
+      expect(vi.getTimerCount()).toBe(3) // telemetría, despachador y comprobación de datos desactualizados
       expect(ctx.worker.isRunning()).toBe(true)
 
       await vi.advanceTimersByTimeAsync(5000)

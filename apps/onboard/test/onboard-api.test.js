@@ -71,3 +71,27 @@ describe('Onboard API · endpoints consumidos', () => {
     expect(ONBOARD_POLL_INTERVAL_MS).toBe(3000)
   })
 })
+
+describe('Onboard API · procedencia de la PVT', () => {
+  const body = { crewMemberId: 'abc', testType: 'pvt' }
+  const headersOf = (fetchImpl) => fetchImpl.mock.calls[0][1].headers
+
+  it('una PVT de una persona se envía sin cabecera de fixture', async () => {
+    const { api, fetchImpl } = setup(() => json(201, { data: {} }))
+    await api.submitVigilanceTest(body)
+    expect(headersOf(fetchImpl)).not.toHaveProperty('X-Data-Fixture')
+  })
+
+  it('una PVT automatizada (desarrollo) se envía con X-Data-Fixture para guardarse como simulada', async () => {
+    const { api, fetchImpl } = setup(() => json(201, { data: {} }))
+    await api.submitVigilanceTest(body, { automated: true })
+    expect(headersOf(fetchImpl)).toMatchObject({ 'X-Data-Fixture': '1' })
+  })
+
+  it('sin herramientas de desarrollo no se envía la cabecera', async () => {
+    const fetchImpl = vi.fn(async () => json(201, { data: {} }))
+    const api = createOnboardApi(createApiClient({ baseUrl: '/api', fetchImpl }), { devTools: false })
+    await api.submitVigilanceTest(body, { automated: true })
+    expect(fetchImpl.mock.calls[0][1].headers).not.toHaveProperty('X-Data-Fixture')
+  })
+})

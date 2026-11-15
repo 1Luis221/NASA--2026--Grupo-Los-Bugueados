@@ -16,6 +16,7 @@ export const VITAL_SIGNS_PLAUSIBILITY = Object.freeze({
   systolic: { min: 40, max: 300, unit: UNITS.MMHG },
   diastolic: { min: 10, max: 200, unit: UNITS.MMHG },
   heartRateVariability: { min: 0, max: 1000, unit: UNITS.MILLISECONDS },
+  activityLevel: { min: 0, max: 25, unit: UNITS.MET },
 })
 
 const P = VITAL_SIGNS_PLAUSIBILITY
@@ -27,12 +28,20 @@ const MEASUREMENT_KEYS = Object.freeze([
   'bodyTemperature',
   'bloodPressure',
   'heartRateVariability',
+  'activityLevel',
 ])
 
 /**
  * Lectura de constantes vitales de un tripulante en un instante.
  * Todas las mediciones son opcionales (no todos los sensores las aportan),
  * pero se exige al menos una.
+ *
+ * - heartRateVariability: RMSSD (raíz cuadrática media de las diferencias
+ *   sucesivas entre latidos, ms) calculada por el dispositivo sobre los
+ *   intervalos RR de su ventana. No se deriva de `heartRate`: la frecuencia
+ *   cardiaca media no contiene la información latido a latido necesaria.
+ * - activityLevel: actividad física reciente en MET (1 ≈ reposo), estimada por
+ *   el dispositivo (acelerómetro).
  */
 export const [VitalSignsSchema, VitalSignsStrictSchema] = defineSchemas(({ object }) => {
   const measure = (key) => measurementSchema(P[key].unit, P[key], object)
@@ -57,6 +66,7 @@ export const [VitalSignsSchema, VitalSignsStrictSchema] = defineSchemas(({ objec
     bodyTemperature: measure('bodyTemperature').optional(),
     bloodPressure: bloodPressure.optional(),
     heartRateVariability: measure('heartRateVariability').optional(),
+    activityLevel: measure('activityLevel').optional(),
   }).superRefine((vitals, ctx) => {
     check(ctx, MEASUREMENT_KEYS.some((key) => vitals[key] !== undefined), [], 'Se requiere al menos una medición')
   })

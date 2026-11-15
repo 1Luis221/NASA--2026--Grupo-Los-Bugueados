@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { check, defineSchemas, idSchema, isNotBefore, textSchema, timestampSchema } from './common.js'
-import { ALERT_CATEGORIES, ALERT_SEVERITIES, ALERT_STATUSES, SYNC_ENTITY_TYPES, SYSTEM_NODES } from './enums.js'
+import { ALERT_CATEGORIES, ALERT_SEVERITIES, ALERT_STATUSES, DATA_SOURCE_TYPES, SYNC_ENTITY_TYPES, SYSTEM_NODES } from './enums.js'
 
 /**
  * Alerta operativa. La severidad indica prioridad de atención, no un
@@ -19,6 +19,32 @@ export const [AlertSchema, AlertStrictSchema] = defineSchemas(({ object }) =>
     message: textSchema(500).optional(),
     /** Registro que motivó la alerta (p. ej. una lectura de constantes). */
     relatedRecord: object({ entityType: z.enum(SYNC_ENTITY_TYPES), id: idSchema }).optional(),
+    /**
+     * Regla que generó la alerta. `demonstrative: true` = regla operativa de
+     * demostración, configurable y sin validación clínica.
+     */
+    rule: object({
+      id: z.string().regex(/^[a-z0-9_.-]{1,60}$/),
+      name: textSchema(120),
+      demonstrative: z.boolean(),
+      /** Parámetros con los que se evaluó (umbrales de la demo, tamaño de línea base…). */
+      parameters: z.record(z.string().max(40), z.union([z.number(), z.string().max(60), z.boolean()])).optional(),
+    }).optional(),
+    /** Registros que sustentan la alerta, con su procedencia y momento. */
+    evidence: z
+      .array(
+        object({
+          entityType: z.enum(SYNC_ENTITY_TYPES),
+          id: idSchema,
+          recordedAt: timestampSchema,
+          source: object({ type: z.enum(DATA_SOURCE_TYPES), simulated: z.boolean() }),
+          summary: textSchema(200),
+        }),
+      )
+      .max(20)
+      .optional(),
+    /** Clave de deduplicación: como máximo una alerta abierta por clave. */
+    dedupKey: z.string().min(1).max(200).optional(),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
     acknowledgedAt: timestampSchema.optional(),

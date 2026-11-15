@@ -35,7 +35,7 @@ describe('exportaciones públicas del paquete', () => {
   it('expone los subpaths declarados en package.json', () => {
     expect(PORTS.GROUND_API).toBe(4000)
     expect(AlertSchema).toBe(shared.AlertSchema)
-    expect(Object.keys(examples).length).toBe(7)
+    expect(Object.keys(examples).length).toBe(8)
   })
 
   it('los nombres de eventos Socket.IO son únicos y siguen "dominio:acción"', () => {

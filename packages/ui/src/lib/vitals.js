@@ -8,6 +8,7 @@ export const VITAL_SIGN_METRICS = Object.freeze([
   { key: 'bodyTemperature', short: 'Temp.' },
   { key: 'bloodPressure', short: 'PA' },
   { key: 'heartRateVariability', short: 'VFC' },
+  { key: 'activityLevel', short: 'Actividad' },
 ])
 
 /** HH:MM:SS en UTC. */

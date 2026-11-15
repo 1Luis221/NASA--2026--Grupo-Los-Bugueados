@@ -15,7 +15,7 @@ import {
 /** Rutas de negocio montadas bajo API_PREFIX (/api). */
 export function createApiRouter(ctx) {
   const router = Router()
-  const records = createRecordsController(ctx.services)
+  const records = createRecordsController(ctx.services, { devControls: ctx.config.devControls })
   const sync = createSyncController(ctx)
 
   router.get('/crew', records.listCrew)
@@ -24,6 +24,10 @@ export function createApiRouter(ctx) {
   router.get('/check-ins', validate(RecordsQuerySchema, 'query'), records.listCheckIns)
   router.post('/check-ins', validate(CheckInInputSchema), records.submitCheckIn)
   router.get('/alerts', validate(AlertsQuerySchema, 'query'), records.listAlerts)
+  router.get('/camera-metrics', validate(RecordsQuerySchema, 'query'), records.listCameraMetrics)
+  router.post('/camera-metrics', records.submitCameraMetrics)
+  router.get('/vigilance-tests', validate(RecordsQuerySchema, 'query'), records.listVigilanceTests)
+  router.post('/vigilance-tests', records.submitVigilanceTest)
 
   router.get('/sync/events', validate(SyncEventsQuerySchema, 'query'), sync.listEvents)
   router.get('/sync/status', sync.status)
@@ -35,6 +39,8 @@ export function createApiRouter(ctx) {
     router.post('/dev/link/failures', validate(InjectFailuresSchema), dev.injectFailures)
     router.post('/dev/telemetry/tick', dev.tickTelemetry)
     router.post('/dev/sync/flush', dev.flushSync)
+    router.post('/dev/alerts/check-staleness', dev.checkStaleness)
+    router.get('/dev/alerts/rules', dev.alertRules)
   }
 
   return router

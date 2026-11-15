@@ -8,6 +8,7 @@ export const SOCKET_EVENTS = Object.freeze({
   // Telemetría y autoevaluaciones (payload: entidad validada por su esquema)
   VITALS_RECORDED: 'vitals:recorded',
   CAMERA_METRICS_RECORDED: 'camera:metrics-recorded',
+  VIGILANCE_TEST_RECORDED: 'vigilance:test-recorded',
   CHECK_IN_SUBMITTED: 'check-in:submitted',
 
   // Tripulación

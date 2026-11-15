@@ -1,4 +1,4 @@
-import { Camera, ClipboardList, FlaskConical, HeartPulse, Home, RefreshCw, Rocket } from 'lucide-react'
+import { Camera, ClipboardList, FlaskConical, HeartPulse, Home, RefreshCw, Rocket, Timer } from 'lucide-react'
 
 export const BRAND = Object.freeze({
   name: 'Astronaut Wellness System',
@@ -17,6 +17,7 @@ export function getNavItems({ devTools = import.meta.env.DEV } = {}) {
     { to: '/check-in', label: 'Autoevaluación', icon: ClipboardList },
     { to: '/sync', label: 'Sincronización', icon: RefreshCw },
     { to: '/camera', label: 'Cámara', icon: Camera },
+    { to: '/vigilance', label: 'Vigilancia', icon: Timer },
     ...(devTools ? [{ to: '/simulation', label: 'Simulación', icon: FlaskConical }] : []),
   ]
 }

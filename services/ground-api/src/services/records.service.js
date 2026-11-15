@@ -16,6 +16,7 @@ export function createRecordsService({ recordStores, syncLog }) {
     listVitals: ({ crewMemberId, limit }) => recordStores.vital_signs.list({ filter: byCrew(crewMemberId), limit }),
     listCheckIns: ({ crewMemberId, limit }) => recordStores.wellness_check_in.list({ filter: byCrew(crewMemberId), limit }),
     listCameraMetrics: ({ crewMemberId, limit }) => recordStores.camera_metrics.list({ filter: byCrew(crewMemberId), limit }),
+    listVigilanceTests: ({ crewMemberId, limit }) => recordStores.vigilance_test.list({ filter: byCrew(crewMemberId), limit }),
 
     listAlerts: ({ status, severity, limit }) =>
       recordStores.alert.list({

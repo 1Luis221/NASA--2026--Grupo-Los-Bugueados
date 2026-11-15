@@ -3,6 +3,7 @@ import {
   exampleAlert,
   exampleCameraMetrics,
   exampleCrewMember,
+  exampleVigilanceTest,
   exampleVitalSigns,
   exampleWellnessCheckIn,
 } from '@astronaut-wellness/shared/examples'
@@ -19,6 +20,7 @@ const EXAMPLES = {
   wellness_check_in: exampleWellnessCheckIn,
   camera_metrics: exampleCameraMetrics,
   alert: exampleAlert,
+  vigilance_test: exampleVigilanceTest,
 }
 
 let sequence = 0

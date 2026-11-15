@@ -106,3 +106,14 @@ describe('estado de sincronización derivado', () => {
     expect(latestSyncError(index([]))).toBeNull()
   })
 })
+
+describe('Autoevaluación · somnolencia (KSS)', () => {
+  it('se envía como entero solo si se indica, y se valida con el contrato', () => {
+    const form = { ...emptyForm(), mood: 3, stress: 2, fatigue: 3, sleepQuality: 3 }
+    expect(toCheckInBody(form, 'x')).not.toHaveProperty('sleepiness')
+    expect(toCheckInBody({ ...form, sleepiness: '8' }, 'x').sleepiness).toBe(8)
+    const crew = '7d1f3c2a-5b8e-4f6a-9c0d-1e2f3a4b5c6d'
+    expect(validateCheckIn({ ...form, sleepiness: '8' }, crew).body.sleepiness).toBe(8)
+    expect(validateCheckIn({ ...form, sleepiness: '12' }, crew).fieldErrors.sleepiness).toMatch(/de 1 a 9/)
+  })
+})

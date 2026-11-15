@@ -17,6 +17,8 @@ export function createGroundApi(client = createApiClient({ baseUrl: API_PREFIX }
       client.get('/check-ins', { query: { crewMemberId, limit }, signal }),
     listCameraMetrics: ({ crewMemberId, limit, signal } = {}) =>
       client.get('/camera-metrics', { query: { crewMemberId, limit }, signal }),
+    listVigilanceTests: ({ crewMemberId, limit, signal } = {}) =>
+      client.get('/vigilance-tests', { query: { crewMemberId, limit }, signal }),
     listAlerts: ({ status, severity, limit, signal } = {}) =>
       client.get('/alerts', { query: { status, severity, limit }, signal }),
 

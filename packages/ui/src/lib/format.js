@@ -73,6 +73,7 @@ export const UNIT_LABELS = Object.freeze({
   count: '',
   h: 'h',
   s: 's',
+  MET: 'MET',
 })
 
 export const unitLabel = (unit) => UNIT_LABELS[unit] ?? unit ?? ''
@@ -109,6 +110,7 @@ export const VITAL_SIGN_LABELS = Object.freeze({
   bodyTemperature: 'Temperatura corporal',
   bloodPressure: 'Presión arterial',
   heartRateVariability: 'Variabilidad de la frecuencia cardiaca',
+  activityLevel: 'Actividad física',
 })
 
 /** Texto de cualquier medición de VitalSigns por su clave. */
@@ -120,7 +122,7 @@ export function formatVitalSign(reading, key) {
 /** Origen del dato legible: "Sensor · simulado (sim-wearable-01)". */
 export function describeSource(source) {
   if (!source) return MISSING_TEXT
-  const type = { sensor: 'Sensor', camera: 'Cámara', self_report: 'Autoevaluación' }[source.type] ?? source.type
+  const type = { sensor: 'Sensor', camera: 'Cámara', self_report: 'Autoevaluación', cognitive_test: 'Prueba cognitiva' }[source.type] ?? source.type
   const nature = source.simulated ? 'simulado' : 'real'
   return `${type} · ${nature}${source.deviceId ? ` (${source.deviceId})` : ''}`
 }

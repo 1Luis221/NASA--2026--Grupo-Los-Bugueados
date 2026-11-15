@@ -314,15 +314,15 @@ describe('Simulación (desarrollo)', () => {
 })
 
 describe('Cámara', () => {
-  it('pantalla preparatoria: pendiente, experimental y sin solicitar permisos', async () => {
+  it('informa de privacidad y carácter experimental, y no pide permiso hasta pulsar «Activar cámara»', async () => {
     const getUserMedia = vi.fn()
     Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia } })
     renderApp({ path: '/camera' })
-    expect(await screen.findByText('Pendiente de implementación')).toBeInTheDocument()
-    expect(screen.getByText('Funcionalidad experimental')).toBeInTheDocument()
-    expect(screen.getByText(/nunca imágenes, fotogramas ni vídeo/)).toBeInTheDocument()
+    expect(await screen.findByText('Privacidad: el vídeo no sale de este dispositivo')).toBeInTheDocument()
+    expect(screen.getByText('Métricas experimentales, no diagnósticas')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Activar cámara/ })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /Enviar métricas agregadas/ })).not.toBeChecked()
     expect(getUserMedia).not.toHaveBeenCalled()
-    expect(screen.queryByRole('button', { name: /cámara|iniciar|activar/i })).not.toBeInTheDocument()
   })
 })
 
