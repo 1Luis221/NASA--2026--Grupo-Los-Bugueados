@@ -130,3 +130,9 @@ Los escenarios también están automatizados en `services/onboard-api/test/integ
 - **Crecimiento**: la cola y los registros crecen sin límite durante la ejecución (sin purga de eventos confirmados).
 - **Alertas**: solo operativas de comunicaciones. No hay alertas clínicas ni umbrales.
 - **Cámara**: tierra acepta y emite `camera_metrics`, pero la nave aún no los genera (MediaPipe, fase posterior).
+
+## Consumo desde las interfaces
+
+- **Ground Control** usa los endpoints de consulta de Ground API y **una sola** conexión Socket.IO; al reconectar recarga por HTTP lo emitido sin conexión y fusiona por UUID. Detecta reinicios de Ground API cuando `processedEvents` retrocede.
+- **Onboard** usa Onboard API con un único sondeo cada ~3 s (`GET /api/sync/status` y `GET /api/sync/events?status=…` de los estados sin acuse).
+- **Confirmación de recepción en Onboard:** solo se muestra «Recibido por Tierra» con evidencia (instantánea de `/api/sync/status` sin eventos sin acuse, posterior a la creación del registro). `GET /api/sync/events` devuelve los eventos **más antiguos** (orden ascendente, máximo 500, sin paginación ni filtro por entidad), así que no sirve para confirmar un evento reciente concreto. **Pendiente para la integración:** añadir un filtro por `entityId` u orden descendente con paginación. Detalles en [frontend.md](frontend.md).

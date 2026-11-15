@@ -1,0 +1,151 @@
+/*
+ * Tema compartido de Astronaut Wellness System (Tailwind CSS v4 + shadcn/ui).
+ * Cada app lo importa desde su index.css: @import "@astronaut-wellness/ui/globals.css";
+ */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Escanea los componentes compartidos desde cualquier app que importe este CSS. */
+@source "../";
+
+/* La interfaz es siempre oscura: <html class="dark"> activa las variantes dark: de shadcn. */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Tokens de diseño — tema oscuro de panel de misión.
+ * Contraste medido con packages/ui/scripts/contrast.mjs (npm run a11y:contrast):
+ * texto ≥ 4.5:1 y controles, foco e indicadores ≥ 3:1 (WCAG 2.2 AA).
+ */
+:root {
+  --radius: 0.625rem;
+
+  --background: oklch(0.155 0.02 260);
+  --foreground: oklch(0.965 0.008 250);
+  --card: oklch(0.2 0.024 260);
+  --card-foreground: oklch(0.965 0.008 250);
+  --popover: oklch(0.22 0.026 260);
+  --popover-foreground: oklch(0.965 0.008 250);
+
+  --primary: oklch(0.78 0.12 225);
+  --primary-foreground: oklch(0.18 0.03 250);
+  --secondary: oklch(0.27 0.03 260);
+  --secondary-foreground: oklch(0.965 0.008 250);
+  --muted: oklch(0.26 0.026 260);
+  --muted-foreground: oklch(0.74 0.02 255);
+  --accent: oklch(0.3 0.04 250);
+  --accent-foreground: oklch(0.975 0.006 250);
+  --destructive: oklch(0.68 0.19 25);
+
+  --border: oklch(1 0 0 / 11%); /* separadores decorativos */
+  /* Borde de controles (campos, selectores, escalas): ≥ 3:1 frente a fondo y tarjetas (WCAG 1.4.11). */
+  --input: oklch(0.52 0.03 255);
+  --ring: oklch(0.78 0.12 225);
+
+  /* Estados (texto e indicadores). Sin significado clínico. */
+  --success: oklch(0.79 0.15 155);
+  --warning: oklch(0.84 0.15 80);
+  --info: oklch(0.78 0.12 225);
+
+  /* Series de gráficos: distinguibles entre sí y con el fondo. */
+  --chart-1: oklch(0.78 0.12 225);
+  --chart-2: oklch(0.79 0.15 155);
+  --chart-3: oklch(0.84 0.15 80);
+  --chart-4: oklch(0.72 0.17 300);
+  --chart-5: oklch(0.72 0.17 20);
+
+  --sidebar: oklch(0.18 0.022 260);
+  --sidebar-foreground: oklch(0.93 0.01 250);
+  --sidebar-primary: oklch(0.78 0.12 225);
+  --sidebar-primary-foreground: oklch(0.18 0.03 250);
+  --sidebar-accent: oklch(0.27 0.035 255);
+  --sidebar-accent-foreground: oklch(0.975 0.006 250);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.78 0.12 225);
+}
+
+@theme inline {
+  --font-sans: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: dark;
+    /* El encabezado es fijo: evita que tape el foco o el destino de un enlace interno (WCAG 2.4.11). */
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    @apply min-h-svh bg-background font-sans text-foreground antialiased;
+  }
+
+  /* Foco siempre visible para navegación con teclado. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /*
+   * Sin animaciones para quien las haya desactivado en el sistema.
+   * Las transiciones van a 0s (no 0.01ms): como `transition-property` vale `all` por
+   * defecto, una duración mínima crearía transiciones en TODAS las propiedades de todos
+   * los elementos —incluida `visibility`, que se hereda— y, por ejemplo, el menú móvil
+   * seguiría oculto un instante y no podría recibir el foco.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0s !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

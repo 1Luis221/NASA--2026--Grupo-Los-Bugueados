@@ -20,17 +20,23 @@
     "dev:ground-ui": "npm run dev -w @astronaut-wellness/ground-control",
     "dev:onboard-ui": "npm run dev -w @astronaut-wellness/onboard",
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && vitest run --dir scripts",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "e2e:demo": "node scripts/e2e/demo.mjs",
+    "a11y:contrast": "node packages/ui/scripts/contrast.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
     "concurrently": "^10.0.7",
     "eslint": "^10.15.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.14.0",
+    "jsdom": "^31.0.1",
     "vitest": "^5.1.0"
   }
 }

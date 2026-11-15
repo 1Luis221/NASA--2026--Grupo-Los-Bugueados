@@ -16,4 +16,9 @@ export default defineConfig({
   },
   server: { port: PORTS.ONBOARD_UI, strictPort: true, proxy },
   preview: { port: PORTS.ONBOARD_PREVIEW, strictPort: true, proxy },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['@astronaut-wellness/ui/test-setup'],
+    css: false,
+  },
 })
