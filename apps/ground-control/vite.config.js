@@ -20,4 +20,9 @@ export default defineConfig({
   },
   server: { port: PORTS.GROUND_CONTROL_UI, strictPort: true, proxy },
   preview: { port: PORTS.GROUND_CONTROL_PREVIEW, strictPort: true, proxy },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['@astronaut-wellness/ui/test-setup'],
+    css: false,
+  },
 })

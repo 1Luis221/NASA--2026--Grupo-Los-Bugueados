@@ -21,6 +21,8 @@
 - `packages/shared` es ESM puro e isomórfico (navegador y Node): no debe importar módulos exclusivos de Node ni de React.
 - Los modelos de datos, sus reglas de validación y los eventos Socket.IO están documentados en [models.md](models.md).
 - La sincronización nave–Tierra, el simulador del enlace, los endpoints y los eventos en tiempo real están en [communications.md](communications.md).
+- Las interfaces, `packages/ui`, la capa de datos, la accesibilidad y el rendimiento están en [frontend.md](frontend.md); el guion de demostración en [demo.md](demo.md).
+- **Almacenamiento en memoria:** datos y cola de sincronización se pierden al reiniciar los procesos; no hay garantía de recuperación.
 
 ## Convenciones de las APIs
 
@@ -47,8 +49,21 @@ test/                 Vitest + Supertest; sin servicios externos (puertos efíme
 
 ## Convenciones de los frontends
 
-- Alias `@/` → `src/` (configurado en `vite.config.js` y `jsconfig.json`; preparado para shadcn/ui).
-- Estilos con Tailwind CSS v4 vía `@tailwindcss/vite`; el punto de entrada es `src/index.css`.
+```
+src/
+  main.jsx            proveedores (tiempo real / estado de la nave) + router
+  App.jsx             AppShell, rutas y páginas cargadas bajo demanda
+  navigation.js       menú
+  api/                funciones por endpoint sobre createApiClient (packages/ui)
+  pages/              una pantalla por archivo
+  components/         componentes propios de la app
+  realtime/ · state/  Socket.IO (tierra) · selección y sondeo (nave)
+test/                 Vitest + React Testing Library, API y Socket.IO simulados
+```
+
+- Componentes y capa de datos compartidos en `packages/ui`; tema en `@astronaut-wellness/ui/globals.css`.
+- Estilos con Tailwind CSS v4 vía `@tailwindcss/vite`; tema oscuro fijo (`<html class="dark">`).
+- Alias `@/` → `src/` (configurado en `vite.config.js` y `jsconfig.json`).
 
 ## Decisiones
 
@@ -67,6 +82,5 @@ test/                 Vitest + Supertest; sin servicios externos (puertos efíme
 - **Fase 0** — Saneamiento del monorepo ✅
 - **Fase 1** — Modelos y contratos compartidos en `packages/shared` (Zod, eventos) + tests ✅
 - **Fase 2** — Backend y comunicaciones nave–Tierra: telemetría simulada, check-ins, cola con reintentos, enlace simulado, Socket.IO ✅
-- **Fase 3** — UI base: shadcn/ui, layout, rutas
-- **Fase 4** — MVP funcional de ambas interfaces
-- **Fase 5** — Extras: MediaPipe, persistencia, documentación para el jurado
+- **Fase 3** — Interfaces React de Ground Control y Onboard, `packages/ui`, accesibilidad y E2E reproducible (pendiente de cierre)
+- **Pendiente** — Persistencia, confirmación de sincronización por evento (contrato), MediaPipe, documentación para el jurado

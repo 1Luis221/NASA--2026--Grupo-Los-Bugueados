@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": false,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@astronaut-wellness/ui/components",
+    "ui": "@astronaut-wellness/ui/components/ui",
+    "utils": "@astronaut-wellness/ui/lib/utils",
+    "lib": "@astronaut-wellness/ui/lib",
+    "hooks": "@astronaut-wellness/ui/hooks"
+  }
+}

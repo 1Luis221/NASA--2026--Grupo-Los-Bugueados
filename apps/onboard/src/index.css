@@ -1,7 +1,2 @@
-@import "tailwindcss";
-
-@layer base {
-  html {
-    color-scheme: dark;
-  }
-}
+/* Tema oscuro compartido (Tailwind CSS v4 + tokens de shadcn/ui), definido en packages/ui. */
+@import "@astronaut-wellness/ui/globals.css";
