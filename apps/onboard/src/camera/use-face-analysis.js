@@ -91,9 +91,19 @@ export function useFaceAnalysis(options = {}) {
   }, [])
 
   const stop = useCallback(() => {
-    release(sessionRef.current)
+    const session = sessionRef.current
+    const { minPartialWindowMs, onWindow } = opts()
+    // La ventana en curso no se pierde en silencio: si ya cubre el mínimo, se entrega con su
+    // duración REAL (más corta que la configurada). Quien la recibe decide si se envía (consentimiento).
+    const partial =
+      session?.window && !session.released && session.window.elapsedMs() >= minPartialWindowMs
+        ? session.window.finish({ model: FACE_MODEL_INFO })
+        : null
+    release(session)
     setStatus('stopped')
     setLive(null)
+    if (partial) onWindow?.(partial, { partial: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- estable a propósito: lee las opciones de optionsRef
   }, [release])
 
   const start = useCallback(async () => {
@@ -219,6 +229,8 @@ function withDefaults({
   isFrameReady = (video) => video.readyState >= 2,
   dedupeFrames = true,
   uiIntervalMs = 500,
+  /** Al detener, la ventana en curso se entrega si dura al menos esto. */
+  minPartialWindowMs = 5000,
 } = {}) {
-  return { windowMs, onWindow, createLandmarker, getMediaDevices, requestFrame, cancelFrame, now, isFrameReady, dedupeFrames, uiIntervalMs }
+  return { windowMs, onWindow, createLandmarker, getMediaDevices, requestFrame, cancelFrame, now, isFrameReady, dedupeFrames, uiIntervalMs, minPartialWindowMs }
 }

@@ -224,7 +224,7 @@ describe('Tiempo real', () => {
   it('vigilance:test-recorded añade la prueba PVT del tripulante con su procedencia (e ignora las inválidas)', async () => {
     const { socket } = renderApp({ path: `/crew/${ANA_ID}` })
     const section = await screen.findByRole('region', { name: 'Vigilancia cognitiva (PVT)' })
-    await waitFor(() => expect(within(section).getByText('Ground API no ha recibido pruebas de vigilancia de este tripulante.')).toBeInTheDocument())
+    await waitFor(() => expect(within(section).getByText(/Ground API no ha recibido pruebas de vigilancia de este tripulante desde que se inició.*memoria/)).toBeInTheDocument())
 
     const test = { ...structuredClone(exampleVigilanceTest), id: crypto.randomUUID(), crewMemberId: ANA_ID }
     act(() => {

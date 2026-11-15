@@ -370,7 +370,7 @@ describe('Flujo crítico: desconexión y reconexión', () => {
     expect(await within(receipt).findByText('Recibido por Tierra', {}, { timeout: 2000 })).toBeInTheDocument()
     // La confirmación cita su evidencia: una instantánea de la cola sin eventos sin acuse.
     expect(within(receipt).getByText(/la cola de la nave no tenía ningún evento sin acuse/)).toBeInTheDocument()
-  })
+  }, 15_000) // flujo completo de varias pantallas: con el equipo cargado puede superar 5 s
 })
 
 describe('Acuses de sincronización: solo con evidencia verificable', () => {

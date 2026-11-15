@@ -164,7 +164,7 @@ function CrewDetail({ id }) {
             <VigilanceTestTable
               tests={vigilance.records}
               caption={`Pruebas de vigilancia de ${member.displayName}`}
-              emptyDescription="Ground API no ha recibido pruebas de vigilancia de este tripulante."
+              emptyDescription="Ground API no ha recibido pruebas de vigilancia de este tripulante desde que se inició (los datos se guardan en memoria y se pierden al reiniciar las API)."
             />
           </PageSection>
 
@@ -176,7 +176,7 @@ function CrewDetail({ id }) {
             <CameraMetricsTable
               metrics={camera.records}
               caption={`Métricas de cámara de ${member.displayName}`}
-              emptyDescription="Ground API no ha recibido métricas de cámara de este tripulante."
+              emptyDescription="Ground API no ha recibido métricas de cámara de este tripulante desde que se inició (los datos se guardan en memoria y se pierden al reiniciar las API). Solo llegan si a bordo se activa «Enviar métricas agregadas»."
             />
           </PageSection>
         </div>

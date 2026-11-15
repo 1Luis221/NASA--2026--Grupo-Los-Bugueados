@@ -93,7 +93,7 @@ describe('Cámara · análisis facial local', () => {
     const { user, api } = renderCamera(browser)
     await activate(user)
     await browser.frames(310)
-    expect(await screen.findByText(/1 descartada/)).toBeInTheDocument()
+    expect(await screen.findByText(/Envío desactivado.*Ground Control no las recibirá \(1 ventana descartada\)/)).toBeInTheDocument()
     expect(api.submitCameraMetrics).not.toHaveBeenCalled()
   })
 
@@ -322,5 +322,44 @@ describe('MediaPipe sin WebGL y delegado GPU/CPU (regresión «activeTexture»)'
     expect(tracks).toHaveLength(10)
     expect(tracks.every((t) => t.stop.mock.calls.length > 0)).toBe(true)
     await waitFor(() => expect(landmarkers.every((lm) => lm.close.mock.calls.length === 1)).toBe(true))
+  })
+})
+
+describe('Cámara · la ventana en curso no se pierde al detener (incidencia «Sin métricas de cámara»)', () => {
+  it('con consentimiento, «Detener» envía la parte registrada (≥ 5 s) con su duración real', async () => {
+    const browser = createBrowser()
+    const { user, api } = renderCamera(browser)
+    await user.click(await screen.findByRole('checkbox', { name: /Enviar métricas agregadas/ }))
+    expect(screen.getByText(/Si detienes la cámara antes, se envía la parte registrada/)).toBeInTheDocument()
+    await activate(user)
+    await browser.frames(121) // 12 s de una ventana de 30 s
+    expect(api.submitCameraMetrics).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: /Detener cámara/ }))
+    await waitFor(() => expect(api.submitCameraMetrics).toHaveBeenCalledTimes(1))
+    const body = api.submitCameraMetrics.mock.calls[0][0]
+    expect(body).toMatchObject({ crewMemberId: ANA.id, windowDuration: { value: 12, unit: 's' }, faceDetected: true })
+    expect(await screen.findByRole('list', { name: 'Ventanas enviadas' })).toHaveTextContent('HTTP 201')
+    expect(browser.track.stop).toHaveBeenCalled()
+  })
+
+  it('con consentimiento, una ventana de menos de 5 s no se envía', async () => {
+    const browser = createBrowser()
+    const { user, api } = renderCamera(browser)
+    await user.click(await screen.findByRole('checkbox', { name: /Enviar métricas agregadas/ }))
+    await activate(user)
+    await browser.frames(30) // 3 s
+    await user.click(screen.getByRole('button', { name: /Detener cámara/ }))
+    await new Promise((r) => setTimeout(r, 50))
+    expect(api.submitCameraMetrics).not.toHaveBeenCalled()
+  })
+
+  it('sin consentimiento, la parte registrada se descarta al detener y se indica', async () => {
+    const browser = createBrowser()
+    const { user, api } = renderCamera(browser)
+    await activate(user)
+    await browser.frames(121)
+    await user.click(screen.getByRole('button', { name: /Detener cámara/ }))
+    expect(await screen.findByText(/\(1 ventana descartada\)/)).toBeInTheDocument()
+    expect(api.submitCameraMetrics).not.toHaveBeenCalled()
   })
 })

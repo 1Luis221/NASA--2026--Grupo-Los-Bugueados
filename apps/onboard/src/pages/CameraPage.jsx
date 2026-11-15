@@ -206,8 +206,8 @@ function CameraAnalysis({ member, analysisOptions }) {
             </div>
             <p className="text-xs text-muted-foreground">
               {sendEnabled
-                ? 'Al cerrar cada ventana se enviarán solo sus cifras agregadas, que se sincronizarán con Tierra.'
-                : `Modo solo local: las ventanas se calculan y se descartan${localOnly ? ` (${localOnly} descartada${localOnly === 1 ? '' : 's'})` : ''}.`}
+                ? `Envío activado: al cerrar cada ventana de ${windowSeconds} s se envían solo sus cifras agregadas, que se sincronizan con Tierra. Si detienes la cámara antes, se envía la parte registrada (mínimo 5 s).`
+                : `Envío desactivado: las métricas se calculan y se descartan en este dispositivo, y Ground Control no las recibirá${localOnly ? ` (${localOnly} ventana${localOnly === 1 ? '' : 's'} descartada${localOnly === 1 ? '' : 's'})` : ''}. Marca la casilla para compartirlas.`}
             </p>
             <LiveMetrics live={status === 'running' ? live : null} windowSeconds={windowSeconds} />
           </div>

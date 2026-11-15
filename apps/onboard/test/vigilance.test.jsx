@@ -182,6 +182,7 @@ describe('Pantalla de vigilancia', () => {
     expect(within(summary).getByText('TR medio').nextSibling).toHaveTextContent('230 ms')
     expect(screen.getByText(/protocolo de demostración \(no estándar\)/)).toBeInTheDocument()
     expect(api.submitVigilanceTest).not.toHaveBeenCalled() // nada se envía sin pulsar el botón
+    expect(screen.getByText(/Resultado sin guardar: no se registra en Onboard API ni llega a Tierra hasta que pulses «Enviar resultado»/)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /Enviar resultado/ }))
     await waitFor(() => expect(api.submitVigilanceTest).toHaveBeenCalledTimes(1))

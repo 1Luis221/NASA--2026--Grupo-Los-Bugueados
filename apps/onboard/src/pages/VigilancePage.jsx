@@ -252,6 +252,9 @@ function Vigilance({ member, engineOptions }) {
               Prueba terminada · {result.protocol.name} · {result.protocol.durationSeconds} s
               {result.protocol.name !== PVT_DEFAULT_PROTOCOL.name && ' · protocolo de demostración (no estándar)'}
             </p>
+            <p className="text-sm font-medium" role="status">
+              Resultado sin guardar: no se registra en Onboard API ni llega a Tierra hasta que pulses «Enviar resultado».
+            </p>
             {automated && (
               <Alert role="status">
                 <FlaskConical aria-hidden="true" />
